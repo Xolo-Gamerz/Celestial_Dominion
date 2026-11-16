@@ -2,12 +2,17 @@
   "layers": {
     "humanoid": [
       {
-        "texture": "celestial_dominion:celestial_layer_1"
+        "texture": "celestial_dominion:celestial"
+      }
+    ],
+    "humanoid_baby": [
+      {
+        "texture": "celestial_dominion:celestial"
       }
     ],
     "humanoid_leggings": [
       {
-        "texture": "celestial_dominion:celestial_layer_2"
+        "texture": "celestial_dominion:celestial"
       }
     ]
   }

@@ -6,18 +6,10 @@
     "DNI"
   ],
   "key": {
-    "D": {
-      "item": "minecraft:diamond"
-    },
-    "T": {
-      "item": "minecraft:netherite_upgrade_smithing_template"
-    },
-    "I": {
-      "item": "celestial_dominion:abyssal_ingot"
-    },
-    "N": {
-      "item": "minecraft:netherite_ingot"
-    }
+    "D": "minecraft:diamond",
+    "T": "minecraft:netherite_upgrade_smithing_template",
+    "I": "celestial_dominion:abyssal_ingot",
+    "N": "minecraft:netherite_ingot"
   },
   "result": {
     "id": "celestial_dominion:abyssal_smithing_template",
