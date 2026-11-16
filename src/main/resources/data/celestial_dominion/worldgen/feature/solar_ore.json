@@ -9,7 +9,7 @@
         "tag": "minecraft:stone_ore_replaceables"
       },
       "state": {
-        "Name": "celestial_dominion:solar_ore"
+        "id": "celestial_dominion:solar_ore"
       }
     }
   ]

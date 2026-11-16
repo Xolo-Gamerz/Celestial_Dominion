@@ -9,7 +9,7 @@
         "block": "minecraft:end_stone"
       },
       "state": {
-        "Name": "celestial_dominion:celestial_ore"
+        "id": "celestial_dominion:celestial_ore"
       }
     }
   ]

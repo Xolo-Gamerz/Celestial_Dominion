@@ -9,7 +9,7 @@
         "tag": "minecraft:base_stone_nether"
       },
       "state": {
-        "Name": "celestial_dominion:abyssal_ore"
+        "id": "celestial_dominion:abyssal_ore"
       }
     }
   ]
