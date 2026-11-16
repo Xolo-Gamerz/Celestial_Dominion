@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": "celestial_dominion:abyssal_sword",
+  "base": "celestial_dominion:solar_sword",
+  "addition": "celestial_dominion:celestial_catalyst",
+  "result": {
+    "id": "celestial_dominion:celestial_sword"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "celestial_dominion:celestial_layer_1"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "celestial_dominion:celestial_layer_2"
+      }
+    ]
+  }
+}

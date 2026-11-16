@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": "celestial_dominion:abyssal_smithing_template",
+  "base": "minecraft:netherite_chestplate",
+  "addition": "celestial_dominion:abyssal_ingot",
+  "result": {
+    "id": "celestial_dominion:abyssal_chestplate"
+  }
+}

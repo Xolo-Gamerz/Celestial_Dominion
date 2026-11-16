@@ -1,0 +1,22 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "SAS",
+    "ACA",
+    "SAS"
+  ],
+  "key": {
+    "S": {
+      "item": "celestial_dominion:solar_ingot"
+    },
+    "A": {
+      "item": "celestial_dominion:abyssal_ingot"
+    },
+    "C": {
+      "item": "celestial_dominion:celestial_ingot"
+    }
+  },
+  "result": {
+    "id": "celestial_dominion:celestial_catalyst"
+  }
+}

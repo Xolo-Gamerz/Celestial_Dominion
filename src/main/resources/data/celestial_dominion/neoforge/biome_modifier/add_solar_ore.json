@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": "celestial_dominion:solar_ore",
+  "step": "underground_ores"
+}

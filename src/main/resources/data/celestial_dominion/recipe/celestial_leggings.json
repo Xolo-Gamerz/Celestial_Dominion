@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": "celestial_dominion:abyssal_leggings",
+  "base": "celestial_dominion:solar_leggings",
+  "addition": "celestial_dominion:celestial_catalyst",
+  "result": {
+    "id": "celestial_dominion:celestial_leggings"
+  }
+}

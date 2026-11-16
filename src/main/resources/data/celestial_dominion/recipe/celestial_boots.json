@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": "celestial_dominion:abyssal_boots",
+  "base": "celestial_dominion:solar_boots",
+  "addition": "celestial_dominion:celestial_catalyst",
+  "result": {
+    "id": "celestial_dominion:celestial_boots"
+  }
+}

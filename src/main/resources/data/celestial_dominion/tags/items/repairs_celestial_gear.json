@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "celestial_dominion:solar_ingot",
+    "celestial_dominion:abyssal_ingot",
+    "celestial_dominion:celestial_ingot"
+  ]
+}
