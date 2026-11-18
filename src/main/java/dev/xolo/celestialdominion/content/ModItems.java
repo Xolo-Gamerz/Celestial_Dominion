@@ -66,6 +66,14 @@ public final class ModItems {
     private static final ToolMaterial CELESTIAL_TOOL = new ToolMaterial(
             BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 30000, 22.0F, 24.0F, 40, REPAIR_TAG);
 
+    // Mining tools share each tier's speed, durability and repair material, but not sword-level damage.
+    private static final ToolMaterial SOLAR_MINING_TOOL = new ToolMaterial(
+            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 12000, 16.0F, 3.0F, 30, REPAIR_TAG);
+    private static final ToolMaterial ABYSSAL_MINING_TOOL = new ToolMaterial(
+            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 18000, 18.0F, 5.0F, 30, REPAIR_TAG);
+    private static final ToolMaterial CELESTIAL_MINING_TOOL = new ToolMaterial(
+            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 30000, 22.0F, 8.0F, 40, REPAIR_TAG);
+
     public static final DeferredItem<Item> SOLAR_ORE_ITEM = ITEMS.registerItem(
             "solar_ore", properties -> new BlockItem(ModBlocks.SOLAR_ORE.get(), properties));
     public static final DeferredItem<Item> ABYSSAL_ORE_ITEM = ITEMS.registerItem(
@@ -101,27 +109,27 @@ public final class ModItems {
             p -> new AbilitySwordItem(p.sword(CELESTIAL_TOOL, 34.0F, -0.8F), AbilitySwordItem.Mode.CELESTIAL));
 
     // Dedicated tools retain vanilla mining rules, enchantment compatibility and block interactions.
-    public static final DeferredItem<Item> SOLAR_PICKAXE = ITEMS.registerItem("solar_pickaxe", p -> new Item(p.pickaxe(SOLAR_TOOL, 8.0F, -2.8F).fireResistant()));
-    public static final DeferredItem<Item> SOLAR_AXE = ITEMS.registerItem("solar_axe", p -> new Item(p.axe(SOLAR_TOOL, 10.0F, -3.0F).fireResistant()));
-    public static final DeferredItem<Item> SOLAR_SHOVEL = ITEMS.registerItem("solar_shovel", p -> new Item(p.shovel(SOLAR_TOOL, 7.0F, -3.0F).fireResistant()));
-    public static final DeferredItem<Item> SOLAR_HOE = ITEMS.registerItem("solar_hoe", p -> new Item(p.hoe(SOLAR_TOOL, 5.0F, -1.0F).fireResistant()));
+    public static final DeferredItem<Item> SOLAR_PICKAXE = ITEMS.registerItem("solar_pickaxe", p -> new Item(p.pickaxe(SOLAR_MINING_TOOL, 1.0F, -2.8F).fireResistant()));
+    public static final DeferredItem<Item> SOLAR_AXE = ITEMS.registerItem("solar_axe", p -> new Item(p.axe(SOLAR_MINING_TOOL, 5.0F, -3.0F).fireResistant()));
+    public static final DeferredItem<Item> SOLAR_SHOVEL = ITEMS.registerItem("solar_shovel", p -> new Item(p.shovel(SOLAR_MINING_TOOL, 1.0F, -3.0F).fireResistant()));
+    public static final DeferredItem<Item> SOLAR_HOE = ITEMS.registerItem("solar_hoe", p -> new Item(p.hoe(SOLAR_MINING_TOOL, 0.0F, -1.0F).fireResistant()));
 
-    public static final DeferredItem<Item> ABYSSAL_PICKAXE = ITEMS.registerItem("abyssal_pickaxe", p -> new Item(p.pickaxe(ABYSSAL_TOOL, 9.0F, -2.8F).fireResistant()));
-    public static final DeferredItem<Item> ABYSSAL_AXE = ITEMS.registerItem("abyssal_axe", p -> new Item(p.axe(ABYSSAL_TOOL, 11.0F, -3.0F).fireResistant()));
-    public static final DeferredItem<Item> ABYSSAL_SHOVEL = ITEMS.registerItem("abyssal_shovel", p -> new Item(p.shovel(ABYSSAL_TOOL, 8.0F, -3.0F).fireResistant()));
-    public static final DeferredItem<Item> ABYSSAL_HOE = ITEMS.registerItem("abyssal_hoe", p -> new Item(p.hoe(ABYSSAL_TOOL, 6.0F, -1.0F).fireResistant()));
+    public static final DeferredItem<Item> ABYSSAL_PICKAXE = ITEMS.registerItem("abyssal_pickaxe", p -> new Item(p.pickaxe(ABYSSAL_MINING_TOOL, 2.0F, -2.8F).fireResistant()));
+    public static final DeferredItem<Item> ABYSSAL_AXE = ITEMS.registerItem("abyssal_axe", p -> new Item(p.axe(ABYSSAL_MINING_TOOL, 6.0F, -3.0F).fireResistant()));
+    public static final DeferredItem<Item> ABYSSAL_SHOVEL = ITEMS.registerItem("abyssal_shovel", p -> new Item(p.shovel(ABYSSAL_MINING_TOOL, 2.0F, -3.0F).fireResistant()));
+    public static final DeferredItem<Item> ABYSSAL_HOE = ITEMS.registerItem("abyssal_hoe", p -> new Item(p.hoe(ABYSSAL_MINING_TOOL, 1.0F, -1.0F).fireResistant()));
 
-    public static final DeferredItem<Item> CELESTIAL_PICKAXE = ITEMS.registerItem("celestial_pickaxe", p -> new Item(p.pickaxe(CELESTIAL_TOOL, 12.0F, -2.8F).fireResistant()));
-    public static final DeferredItem<Item> CELESTIAL_AXE = ITEMS.registerItem("celestial_axe", p -> new Item(p.axe(CELESTIAL_TOOL, 14.0F, -3.0F).fireResistant()));
-    public static final DeferredItem<Item> CELESTIAL_SHOVEL = ITEMS.registerItem("celestial_shovel", p -> new Item(p.shovel(CELESTIAL_TOOL, 10.0F, -3.0F).fireResistant()));
-    public static final DeferredItem<Item> CELESTIAL_HOE = ITEMS.registerItem("celestial_hoe", p -> new Item(p.hoe(CELESTIAL_TOOL, 8.0F, -1.0F).fireResistant()));
+    public static final DeferredItem<Item> CELESTIAL_PICKAXE = ITEMS.registerItem("celestial_pickaxe", p -> new Item(p.pickaxe(CELESTIAL_MINING_TOOL, 3.0F, -2.8F).fireResistant()));
+    public static final DeferredItem<Item> CELESTIAL_AXE = ITEMS.registerItem("celestial_axe", p -> new Item(p.axe(CELESTIAL_MINING_TOOL, 7.0F, -3.0F).fireResistant()));
+    public static final DeferredItem<Item> CELESTIAL_SHOVEL = ITEMS.registerItem("celestial_shovel", p -> new Item(p.shovel(CELESTIAL_MINING_TOOL, 3.0F, -3.0F).fireResistant()));
+    public static final DeferredItem<Item> CELESTIAL_HOE = ITEMS.registerItem("celestial_hoe", p -> new Item(p.hoe(CELESTIAL_MINING_TOOL, 2.0F, -1.0F).fireResistant()));
 
     public static final DeferredItem<Item> SOLAR_MULTITOOL = ITEMS.registerItem("solar_multitool",
-            p -> new CelestialMultitoolItem(multitoolProperties(p, SOLAR_TOOL, 10.0F, -2.7F)));
+            p -> new CelestialMultitoolItem(multitoolProperties(p, SOLAR_MINING_TOOL, 1.0F, -2.7F)));
     public static final DeferredItem<Item> ABYSSAL_MULTITOOL = ITEMS.registerItem("abyssal_multitool",
-            p -> new CelestialMultitoolItem(multitoolProperties(p, ABYSSAL_TOOL, 11.0F, -2.7F)));
+            p -> new CelestialMultitoolItem(multitoolProperties(p, ABYSSAL_MINING_TOOL, 2.0F, -2.7F)));
     public static final DeferredItem<Item> CELESTIAL_MULTITOOL = ITEMS.registerItem("celestial_multitool",
-            p -> new CelestialMultitoolItem(multitoolProperties(p, CELESTIAL_TOOL, 14.0F, -2.6F)));
+            p -> new CelestialMultitoolItem(multitoolProperties(p, CELESTIAL_MINING_TOOL, 3.0F, -2.6F)));
 
     private static Item.Properties multitoolProperties(Item.Properties properties, ToolMaterial material,
                                                         float damage, float speed) {
