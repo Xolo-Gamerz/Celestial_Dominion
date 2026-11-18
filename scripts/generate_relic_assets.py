@@ -111,7 +111,7 @@ def display():
 
 def model_json(item_id, elements, handheld=True):
     return {
-        "parent": "minecraft:item/handheld" if handheld else "minecraft:item/generated",
+        "parent": "minecraft:item/handheld",
         "textures": {"layer0": f"celestial_dominion:item/{item_id}"},
         "elements": elements,
         "display": display(),
