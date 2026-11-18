@@ -7,6 +7,7 @@ this script, so the GitHub Actions workflow and local runs produce identical fil
 from pathlib import Path
 from PIL import Image, ImageDraw
 import random
+import json
 
 ROOT = Path(__file__).resolve().parents[1] / "src/main/resources/assets/celestial_dominion"
 
