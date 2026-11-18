@@ -2,7 +2,7 @@ name: Build Celestial Dominion
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, 'feature/**' ]
   pull_request:
   workflow_dispatch:
 
@@ -15,6 +15,9 @@ concurrency:
 
 jobs:
   build:
+    # Same-repository feature branches run on push; fork PRs run on pull_request.
+    # This avoids duplicate builds for same-repository pull requests.
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.fork
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
