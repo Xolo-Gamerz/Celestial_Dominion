@@ -42,6 +42,8 @@ The jar is written to `build/libs/`. GitHub Actions installs Pillow, generates t
 - Each armor set now uses a base plate texture plus a transparent ornamental overlay, with distinct Solar sun-forging, Abyssal rift and Celestial star-map motifs. Each set also includes material-themed animated 3D wings through Minecraft's built-in `WINGS` equipment layer. Ore blocks remain full 3D block models; ingots, templates and the catalyst have dedicated cuboid item models.
 
 ## Automated asset tests
+`docs/PLAYTEST_CHECKLIST.md` contains repeatable in-game checks for held models, animated wings, combat roles, tools, and ore generation.
+
 `python scripts/test_assets.py` parses every resource JSON, checks all 18 3D relic models and animation sheets, verifies base/overlay armor atlas dimensions, and confirms all 15 tool smithing recipes exist. GitHub Actions runs these checks before Gradle.
 
 ## Build caveat
