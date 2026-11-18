@@ -50,4 +50,4 @@ The project includes data-driven world generation, loot tables and all 15 smithi
 - Abyssal and Celestial full sets slow/freeze nearby living entities.
 - Abyssal and Celestial full sets cancel player knockback.
 - Celestial flight is enabled without forcing the player to remain airborne.
-- Armor durability comes from the large ArmorMaterial durability multipliers rather than a small fixed override. It still needs a real Java 25 / NeoForge 26.3 build and in-game validation; no successful compile is claimed from this environment. GitHub Actions performs that build after push.
+- Armor durability comes from the large ArmorMaterial durability multipliers rather than a small fixed override. GitHub Actions runs the Java 25 / NeoForge 26.3 build and asset regression checks. A successful CI build still needs to be followed by an in-game client playtest for model transforms, armor wings, animations and combat feel.
