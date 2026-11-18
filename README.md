@@ -39,10 +39,10 @@ The jar is written to `build/libs/`. GitHub Actions installs Pillow, generates t
 - Each Omnitool combines pickaxe, axe, shovel and hoe mining rules and supports log stripping, copper scraping/unwaxing, dirt pathing, campfire dousing and tilling. It is intentionally a single-block tool: no area mining or tick-driven particles.
 - Tools and swords use native cuboid 3D item geometry, enlarged first-/third-person transforms, and eight-frame 64x64 animated material atlases. Minecraft advances the textures natively.
 - Held relics emit at most two tiny material particles per hand every five ticks on the server; no per-frame Java renderer or shader is used.
-- Each armor set now includes its own material-themed 3D wings through Minecraft's built-in `WINGS` equipment layer. Ore blocks remain full 3D block models; ingots, templates and the catalyst have dedicated cuboid item models.
+- Each armor set now uses a base plate texture plus a transparent ornamental overlay, with distinct Solar sun-forging, Abyssal rift and Celestial star-map motifs. Each set also includes material-themed 3D wings through Minecraft's built-in `WINGS` equipment layer. Ore blocks remain full 3D block models; ingots, templates and the catalyst have dedicated cuboid item models.
 
 ## Automated asset tests
-`python scripts/test_assets.py` parses every resource JSON, checks all 18 3D relic models and animation sheets, verifies armor atlas dimensions, and confirms all 15 tool smithing recipes exist. GitHub Actions runs these checks before Gradle.
+`python scripts/test_assets.py` parses every resource JSON, checks all 18 3D relic models and animation sheets, verifies base/overlay armor atlas dimensions, and confirms all 15 tool smithing recipes exist. GitHub Actions runs these checks before Gradle.
 
 ## Build caveat
 The project includes data-driven world generation, loot tables and all 15 smithing transformations. CI compilation does not replace an in-game rendering and combat playtest.
