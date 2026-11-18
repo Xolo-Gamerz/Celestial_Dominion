@@ -39,9 +39,9 @@ The Python test suite validates resource JSON, model geometry, UV bounds, animat
 /give @p celestial_dominion:celestial_multitool
 ```
 
-4. Check first-person, third-person front/back, offhand, GUI and dropped-item views. The 3D models should have visible depth; they should not look like a flat icon. Check that the larger first-person transform does not clip against the screen.
-5. Hold each tier for at least 10 seconds. Check the distinct Solar ember, Abyssal rift and Celestial star-map artwork, plus the material-colored aura particles in both main hand and offhand. Armor wings use native texture animation; held cuboid textures are intentionally static to avoid the 26.3 transparency-bake bug.
-6. Equip each full armor set. Check the base texture and ornamental overlay, then inspect the material-specific animated wings from behind and from the side. Also check a normal and slim player skin.
+4. Check first-person, third-person front/back, offhand, GUI and dropped-item views. Each sprite must read immediately as its intended vanilla tool or weapon at normal inventory scale: pickaxe head, axe blade, shovel spade, hoe tine, sword blade and Omnitool head. Confirm vanilla-sized transforms and no clipping.
+5. Hold each tier for at least 10 seconds. Check the material-specific palette and restrained Solar ember, Abyssal rift and Celestial star-map details without losing the underlying tool silhouette. Verify material-colored aura particles in both main hand and offhand. Item sprites are intentionally static; armor wings use native texture animation.
+6. Equip each full armor set. Check the pixel-art base armor UVs and transparent ornamental overlay, then inspect the material-specific animated wings from behind and from the side. Also check a normal and slim player skin.
 7. Test baby humanoid armor rendering separately; the baby atlas is a separate resource path and should not break adult armor.
 
 ## Combat role checks
