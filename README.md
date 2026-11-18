@@ -1,22 +1,25 @@
 # Celestial Dominion
 
-Minecraft Java Edition **26.3** / NeoForge **26.3.0.101** / Java **25**.
+Minecraft Java Edition **26.3** / NeoForge **26.3.0.103** / Java **25**.
 
 ## Build
-Install JDK 25 and Gradle 9.2.1, then run:
+Install JDK 25 and Gradle 9.2.1, then generate assets and build:
 
 ```sh
+python -m pip install pillow
+python scripts/generate_textures.py
+python scripts/generate_tool_textures.py
 ./gradlew build
 ```
 
 The jar is written to `build/libs/`. GitHub Actions installs Pillow, generates the textures, builds the project and uploads the jar as an Actions artifact.
 
 ## Current gameplay
-- Solar Overlord, Abyssal Sovereign and Celestial Ascendant armor and swords.
+- Solar Overlord, Abyssal Sovereign and Celestial Ascendant armor, swords, pickaxes, axes, shovels, hoes and Omnitools.
 - Distinct armor defense/toughness/knockback resistance and sword damage/speed.
 - Solar dash/shockwave and Abyssal pull/freeze/heal abilities; Celestial sword combines both.
 - Full-set buffs and flight for the fusion armor.
-- Three custom ore blocks, ingots, smithing-template/catalyst items and 32x32 generated item/block textures.
+- Three custom ore blocks, ingots, smithing-template/catalyst items, distinct generated tool silhouettes and native animated tool textures.
 
 ## World generation and progression
 - Solar Ore: ultra-rare veins in Overworld deepslate near bedrock (Y -63 to -48).
@@ -25,6 +28,13 @@ The jar is written to `build/libs/`. GitHub Actions installs Pillow, generates t
 - Each ore drops its matching ingot. Silk-touch/fortune-specific loot behavior can be added as a balancing pass.
 - Solar/Abyssal smithing: Netherite equipment + matching custom template + matching ingot. Templates are duplicated from a Netherite Upgrade Template, seven diamonds, one Netherite Ingot and one matching rare ingot (produces two).
 - Celestial Catalyst: crafted from four Solar Ingots, four Abyssal Ingots and one Celestial Ingot. Celestial fusion: Solar equipment + matching Abyssal equipment in the template slot + Celestial Catalyst in the addition slot.
+
+## Tool progression
+- Solar tools and the Solar Omnitool are smithing upgrades from Netherite using the Solar Smithing Template and Solar Ingot.
+- Abyssal tools and the Abyssal Omnitool are smithing upgrades from Netherite using the Abyssal Smithing Template and Abyssal Ingot.
+- Celestial tools are the final fusion: the matching Solar tool is the base, the matching Abyssal tool occupies the template slot, and the Celestial Catalyst is the addition.
+- Each Omnitool combines pickaxe, axe, shovel and hoe mining rules and supports log stripping, copper scraping/unwaxing, dirt pathing, campfire dousing and tilling. It is intentionally a single-block tool: no area mining or tick-driven particles.
+- Animated item textures use eight-frame 32x32 sheets and `.png.mcmeta`; Minecraft handles the animation client-side.
 
 ## Build caveat
 The project includes data-driven world generation, loot tables and all 15 smithing transformations.
