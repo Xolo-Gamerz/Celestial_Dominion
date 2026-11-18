@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": "celestial_dominion:solar_smithing_template",
+  "base": "minecraft:netherite_pickaxe",
+  "addition": "celestial_dominion:solar_ingot",
+  "result": {
+    "id": "celestial_dominion:solar_pickaxe"
+  }
+}
