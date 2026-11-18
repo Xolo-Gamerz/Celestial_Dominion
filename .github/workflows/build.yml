@@ -25,12 +25,12 @@ jobs:
       - name: Install Pillow
         run: python -m pip install --upgrade pillow
 
-      - name: Generate 32x32 textures
+      - name: Generate item icons and armor atlases
         run: python scripts/generate_textures.py
 
       - name: Build mod
-        run: chmod +x gradlew && ./gradlew build
-        
+        run: ./gradlew build
+
       - name: Upload mod JAR
         uses: actions/upload-artifact@v4
         with:

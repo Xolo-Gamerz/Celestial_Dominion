@@ -6,7 +6,10 @@ version="${mod_version}"
 displayName="${mod_name}"
 authors="Xolo"
 description='''
-Three endgame equipment paths: Solar Overlord, Abyssal Sovereign, and Celestial Ascendant.
+Three endgame paths forged across three dimensions: the Solar Regalia of the Overworld,
+the Abyssal Regalia of the Nether, and the Celestial Ascendant set hidden in the End.
+Each path has a full-set blessing and an ability-bound sword. Discover the veins,
+forge the templates, and ascend through the smithing progression.
 '''
 
 [[dependencies.${mod_id}]]
