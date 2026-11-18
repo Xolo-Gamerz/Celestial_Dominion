@@ -10,7 +10,7 @@ python scripts/test_assets.py
 ./gradlew build
 ```
 
-The Python test suite validates resource JSON, model geometry, UV bounds, animation metadata, armor/wing atlases, recipe presence and the intended stat ordering. It cannot validate rendering or combat in a running client.
+The Python test suite validates resource JSON, vanilla item-model parents, sprite dimensions, armor/wing atlases, animation metadata, recipe presence and the intended stat ordering. It cannot validate the visual quality of the sprites or combat in a running client.
 
 ## Client visual checks
 
