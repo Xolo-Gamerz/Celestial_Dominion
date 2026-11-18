@@ -29,6 +29,11 @@ public final class GameplayEvents {
             return;
         }
 
+        // Held relic auras are sparse server particles, not a client render loop.
+        if (player.tickCount % 5 == 0) {
+            emitHeldRelicAura(player);
+        }
+
         if (player.tickCount % 20 != 0) {
             return;
         }
@@ -156,6 +161,50 @@ public final class GameplayEvents {
         if (abyssal || celestial) {
             event.setCanceled(true);
         }
+    }
+
+
+    private static void emitHeldRelicAura(ServerPlayer player) {
+        ServerLevel level = (ServerLevel) player.level();
+        var main = player.getMainHandItem();
+        var off = player.getOffhandItem();
+
+        emitRelicAura(level, player, main, 0.0, 0.0);
+        emitRelicAura(level, player, off, 0.12, 0.08);
+    }
+
+    private static void emitRelicAura(ServerLevel level, ServerPlayer player,
+                                      net.minecraft.world.item.ItemStack stack,
+                                      double xOffset, double zOffset) {
+        double x = player.getX() + xOffset;
+        double y = player.getY() + 1.0;
+        double z = player.getZ() + zOffset;
+
+        if (isSolarRelic(stack)) {
+            level.sendParticles(ParticleTypes.FLAME, x, y, z, 2, 0.10, 0.12, 0.10, 0.002);
+        } else if (isAbyssalRelic(stack)) {
+            level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, x, y, z, 2, 0.10, 0.12, 0.10, 0.002);
+        } else if (isCelestialRelic(stack)) {
+            level.sendParticles(ParticleTypes.END_ROD, x, y, z, 2, 0.10, 0.12, 0.10, 0.002);
+        }
+    }
+
+    private static boolean isSolarRelic(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(ModItems.SOLAR_SWORD.get()) || stack.is(ModItems.SOLAR_PICKAXE.get())
+                || stack.is(ModItems.SOLAR_AXE.get()) || stack.is(ModItems.SOLAR_SHOVEL.get())
+                || stack.is(ModItems.SOLAR_HOE.get()) || stack.is(ModItems.SOLAR_MULTITOOL.get());
+    }
+
+    private static boolean isAbyssalRelic(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(ModItems.ABYSSAL_SWORD.get()) || stack.is(ModItems.ABYSSAL_PICKAXE.get())
+                || stack.is(ModItems.ABYSSAL_AXE.get()) || stack.is(ModItems.ABYSSAL_SHOVEL.get())
+                || stack.is(ModItems.ABYSSAL_HOE.get()) || stack.is(ModItems.ABYSSAL_MULTITOOL.get());
+    }
+
+    private static boolean isCelestialRelic(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(ModItems.CELESTIAL_SWORD.get()) || stack.is(ModItems.CELESTIAL_PICKAXE.get())
+                || stack.is(ModItems.CELESTIAL_AXE.get()) || stack.is(ModItems.CELESTIAL_SHOVEL.get())
+                || stack.is(ModItems.CELESTIAL_HOE.get()) || stack.is(ModItems.CELESTIAL_MULTITOOL.get());
     }
 
     private static void updateCelestialFlight(ServerPlayer player, boolean wearingCelestial) {
