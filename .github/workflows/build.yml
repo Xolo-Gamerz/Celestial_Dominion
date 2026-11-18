@@ -28,8 +28,11 @@ jobs:
       - name: Generate item icons and armor atlases
         run: python scripts/generate_textures.py
 
-      - name: Generate animated tool textures
-        run: python scripts/generate_tool_textures.py
+      - name: Generate 3D relic models and animated textures
+        run: python scripts/generate_relic_assets.py
+
+      - name: Validate generated assets
+        run: python scripts/test_assets.py
 
       - name: Build mod
         run: ./gradlew build
