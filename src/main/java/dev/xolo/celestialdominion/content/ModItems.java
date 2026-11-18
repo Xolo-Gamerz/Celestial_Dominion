@@ -73,7 +73,7 @@ public final class ModItems {
 
     // Mining tools share each tier's speed, durability and repair material, but not sword-level damage.
     private static final ToolMaterial SOLAR_MINING_TOOL = new ToolMaterial(
-            BlockTags.INCORRECT_FOR_DIAMOND_TOOL, 12000, 16.0F, 5.0F, 30, REPAIR_TAG);
+            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 12000, 16.0F, 5.0F, 30, REPAIR_TAG);
     private static final ToolMaterial ABYSSAL_MINING_TOOL = new ToolMaterial(
             BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 18000, 18.0F, 2.0F, 30, REPAIR_TAG);
     private static final ToolMaterial CELESTIAL_MINING_TOOL = new ToolMaterial(
