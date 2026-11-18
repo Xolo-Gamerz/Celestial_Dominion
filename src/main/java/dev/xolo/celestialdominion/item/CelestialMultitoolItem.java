@@ -1,32 +1,42 @@
 package dev.xolo.celestialdominion.item;
 
-import java.util.Optional;
 import net.minecraft.core.BlockPos;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.ItemAbilities;
 import net.neoforged.neoforge.common.ItemAbility;
 
 /**
- * A four-discipline tool. Mining/drop rules are supplied by its Tool component;
- * this class exposes and executes the vanilla axe, shovel and hoe transformations.
+ * The Omnitool combines the mining Tool component with all vanilla axe,
+ * shovel and hoe block transformations. Mining/drop rules live in the item
+ * component; this class only dispatches the right-click transformations.
  */
 public final class CelestialMultitoolItem extends Item {
+    private static final ItemAbility AXE_STRIP = ItemAbility.get("axe_strip");
+    private static final ItemAbility AXE_SCRAPE = ItemAbility.get("axe_scrape");
+    private static final ItemAbility AXE_WAX_OFF = ItemAbility.get("axe_wax_off");
+    private static final ItemAbility SHOVEL_FLATTEN = ItemAbility.get("shovel_flatten");
+    private static final ItemAbility SHOVEL_DOUSE = ItemAbility.get("shovel_douse");
+    private static final ItemAbility HOE_TILL = ItemAbility.get("hoe_till");
+
+    private static final ItemAbility[] ACTIONS = {
+            AXE_STRIP, AXE_SCRAPE, AXE_WAX_OFF,
+            SHOVEL_FLATTEN, SHOVEL_DOUSE, HOE_TILL
+    };
+
     public CelestialMultitoolItem(Properties properties) {
         super(properties.stacksTo(1).fireResistant());
     }
 
     @Override
     public boolean canPerformAction(ItemStack stack, ItemAbility ability) {
-        return ItemAbilities.DEFAULT_AXE_ACTIONS.contains(ability)
-                || ItemAbilities.DEFAULT_SHOVEL_ACTIONS.contains(ability)
-                || ItemAbilities.HOE_TILL == ability;
+        for (ItemAbility action : ACTIONS) {
+            if (action == ability) return true;
+        }
+        return false;
     }
 
     @Override
@@ -36,33 +46,15 @@ public final class CelestialMultitoolItem extends Item {
         BlockState original = level.getBlockState(pos);
         ItemStack stack = context.getItemInHand();
 
-        ItemAbility[] actions = {
-                ItemAbilities.AXE_STRIP,
-                ItemAbilities.AXE_SCRAPE,
-                ItemAbilities.AXE_WAX_OFF,
-                ItemAbilities.SHOVEL_FLATTEN,
-                ItemAbilities.SHOVEL_DOUSE,
-                ItemAbilities.HOE_TILL
-        };
-        SoundEvents[] sounds = {
-                SoundEvents.AXE_STRIP,
-                SoundEvents.AXE_SCRAPE,
-                SoundEvents.AXE_WAX_OFF,
-                SoundEvents.SHOVEL_FLATTEN,
-                SoundEvents.FIRE_EXTINGUISH,
-                SoundEvents.HOE_TILL
-        };
-
-        for (int i = 0; i < actions.length; i++) {
-            Optional<BlockState> modified = Optional.ofNullable(
-                    original.getToolModifiedState(context, actions[i], false));
-            if (modified.isEmpty() || modified.get() == original) {
-                continue;
-            }
+        for (ItemAbility action : ACTIONS) {
+            BlockState modified = original.getToolModifiedState(context, action, true);
+            if (modified == null || modified == original) continue;
 
             if (!level.isClientSide()) {
-                level.setBlock(pos, modified.get(), 11);
-                level.playSound(context.getPlayer(), pos, sounds[i], SoundSource.BLOCKS, 1.0F, 1.0F);
+                // Ask the block to perform its normal transformation with simulate=false.
+                modified = original.getToolModifiedState(context, action, false);
+                if (modified == null || modified == original) continue;
+                level.setBlock(pos, modified, 11);
                 if (context.getPlayer() != null) {
                     stack.hurtAndBreak(1, context.getPlayer(), context.getHand());
                 }
