@@ -12,18 +12,27 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 8
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Java 25
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '25'
 
+      # Cache dependencies, transformed Minecraft/NeoForge artifacts, and the
+      # 465 MiB vanilla asset set used by runClient.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-home-cache-includes: |
+            caches/neoformruntime/**
+
       - name: Install Pillow
-        run: python -m pip install --upgrade pillow
+        run: python -m pip install pillow
 
       - name: Generate item icons and armor atlases
         run: python scripts/generate_textures.py
@@ -35,35 +44,82 @@ jobs:
         run: python scripts/test_assets.py
 
       - name: Build mod
-        run: ./gradlew build
+        run: ./gradlew build --no-daemon
 
-      # A normal Gradle build does not bake client item models. Launch a real
-      # NeoForge client under Xvfb with Mesa software GL. Explicitly enable GLX
-      # and force llvmpipe: the default hosted-runner Xvfb configuration may
-      # expose no usable GLX visual, causing Minecraft to abort before reload.
-      - name: Install headless graphics runtime
+      # Minecraft 26.3 requests an sRGB GLX framebuffer that llvmpipe/Xvfb
+      # does not expose. Use Mesa's software Vulkan driver instead. NeoForge's
+      # early loading window must also be disabled in this headless session.
+      - name: Install headless Vulkan runtime
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb libgl1 libglx-mesa0 libgl1-mesa-dri mesa-utils
+          sudo apt-get install -y xvfb mesa-vulkan-drivers vulkan-tools
 
       - name: Smoke-test client model baking
         shell: bash
         env:
-          LIBGL_ALWAYS_SOFTWARE: "1"
-          GALLIUM_DRIVER: llvmpipe
+          VK_ICD_FILENAMES: /usr/share/vulkan/icd.d/lvp_icd.x86_64.json
+          SDL_VIDEO_DRIVER: x11
         run: |
-          set +e
-          timeout --signal=TERM 240s xvfb-run -a -s "-screen 0 1280x720x24 +extension GLX +render -noreset" bash -lc '
-            set -e
-            glxinfo -B
-            ./gradlew runClient --no-daemon
-          '
-          status=$?
-          set -e
-          if [ "$status" -ne 0 ] && [ "$status" -ne 124 ]; then
-            echo "NeoForge client failed before the smoke-test timeout (exit $status)"
-            exit "$status"
+          set -euo pipefail
+          test -f "$VK_ICD_FILENAMES"
+
+          mkdir -p run/config
+          if [ -f run/config/fml.toml ]; then
+            if grep -qE '^[[:space:]]*earlyWindowControl[[:space:]]*=' run/config/fml.toml; then
+              sed -i -E 's/^[[:space:]]*earlyWindowControl[[:space:]]*=.*/earlyWindowControl = false/' run/config/fml.toml
+            else
+              printf '\nearlyWindowControl = false\n' >> run/config/fml.toml
+            fi
+          else
+            printf 'earlyWindowControl = false\n' > run/config/fml.toml
           fi
+
+          timeout --signal=TERM --kill-after=5s 120s xvfb-run -a -s "-screen 0 854x480x24 +extension GLX +render" bash -lc '
+            set -e
+            vulkaninfo --summary
+            ./gradlew runClient --no-daemon
+          ' > "$RUNNER_TEMP/client-smoke.log" 2>&1 &
+          smoke_pid=$!
+
+          deadline=$((SECONDS + 125))
+          reload_seen=0
+          while (( SECONDS < deadline )); do
+            if grep -q "Reloading ResourceManager" run/logs/latest.log 2>/dev/null; then
+              # Give asynchronous model baking/resource reload callbacks time
+              # to finish, then stop the interactive client instead of burning
+              # the rest of the timeout waiting for a user to close it.
+              sleep 15
+              reload_seen=1
+              break
+            fi
+
+            if grep -Eq "Failed to create backend|Vulkan is not supported|Couldn't find matching GLX visual" run/logs/latest.log 2>/dev/null; then
+              echo "Minecraft graphics backend failed before resource reload:"
+              tail -n 100 run/logs/latest.log
+              pkill -TERM -f '[n]et.neoforged.devlaunch.Main' || true
+              kill "$smoke_pid" 2>/dev/null || true
+              wait "$smoke_pid" || true
+              exit 1
+            fi
+
+            if ! kill -0 "$smoke_pid" 2>/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$reload_seen" -eq 1 ]; then
+            pkill -TERM -f '[n]et.neoforged.devlaunch.Main' || true
+          else
+            echo "Client did not reach resource reload within 120 seconds."
+            tail -n 120 "$RUNNER_TEMP/client-smoke.log"
+            kill "$smoke_pid" 2>/dev/null || true
+            wait "$smoke_pid" || true
+            exit 1
+          fi
+
+          wait "$smoke_pid" || true
+          cat "$RUNNER_TEMP/client-smoke.log"
           python scripts/check_client_model_bake.py run/logs/latest.log
 
       - name: Upload mod JAR
