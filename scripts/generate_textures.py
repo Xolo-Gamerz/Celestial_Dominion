@@ -285,7 +285,16 @@ def main():
         for layer in ("humanoid", "humanoid_leggings", "humanoid_baby"):
             out = ROOT / "textures/entity/equipment" / layer / f"{material}.png"
             out.parent.mkdir(parents=True, exist_ok=True)
-            make_armor_atlas(material, layer).save(out)
+            atlas = make_armor_atlas(material, layer)
+            if layer == "humanoid_baby":
+                # 26.1+ uses a dedicated 64x64 baby-humanoid equipment atlas.
+                # Preserve the UV art in the upper atlas and mirror its mapped
+                # surfaces into the lower half instead of stretching the UVs.
+                baby = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+                baby.paste(atlas, (0, 0))
+                baby.paste(atlas, (0, 32))
+                atlas = baby
+            atlas.save(out)
     make_catalyst().save(ROOT / "textures/item" / "celestial_catalyst.png")
 
 
