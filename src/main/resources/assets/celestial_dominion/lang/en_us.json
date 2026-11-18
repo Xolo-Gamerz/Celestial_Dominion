@@ -1,39 +1,32 @@
 {
   "itemGroup.celestial_dominion": "Celestial Dominion",
-
   "item.celestial_dominion.solar_ingot": "Solarite Ingot",
   "item.celestial_dominion.abyssal_ingot": "Abyssal Ingot",
   "item.celestial_dominion.celestial_ingot": "Celestial Ingot",
   "item.celestial_dominion.solar_smithing_template": "Solar Smithing Template",
   "item.celestial_dominion.abyssal_smithing_template": "Abyssal Smithing Template",
   "item.celestial_dominion.celestial_catalyst": "Celestial Catalyst",
-
   "item.celestial_dominion.solar_ore": "Solar Ore",
   "block.celestial_dominion.solar_ore": "Solar Ore",
   "item.celestial_dominion.abyssal_ore": "Abyssal Ore",
   "block.celestial_dominion.abyssal_ore": "Abyssal Ore",
   "item.celestial_dominion.celestial_ore": "Celestial Ore",
   "block.celestial_dominion.celestial_ore": "Celestial Ore",
-
   "item.celestial_dominion.solar_sword": "Dawnrender, Blade of the First Sun",
   "item.celestial_dominion.abyssal_sword": "Eventide, the Void's Hunger",
   "item.celestial_dominion.celestial_sword": "Genesis, Edge of the Firmament",
-
   "item.celestial_dominion.solar_helmet": "Solar Helm of the First Dawn",
   "item.celestial_dominion.solar_chestplate": "Solar Aegis of the Sunforged",
   "item.celestial_dominion.solar_leggings": "Solar Greaves of the Vanguard",
   "item.celestial_dominion.solar_boots": "Solar Treads of the Phoenix",
-
   "item.celestial_dominion.abyssal_helmet": "Abyssal Crown of the Drowned King",
   "item.celestial_dominion.abyssal_chestplate": "Abyssal Carapace of the Deep",
   "item.celestial_dominion.abyssal_leggings": "Abyssal Legguards of the Black Tide",
   "item.celestial_dominion.abyssal_boots": "Abyssal Steps of the Event Horizon",
-
   "item.celestial_dominion.celestial_helmet": "Celestial Crown of the Firmament",
   "item.celestial_dominion.celestial_chestplate": "Celestial Aegis of Ascension",
   "item.celestial_dominion.celestial_leggings": "Celestial Mantle of the Constellation",
   "item.celestial_dominion.celestial_boots": "Celestial Soles of the Starborn",
-
   "tooltip.celestial_dominion.solar_ore.lore": "A star's last ember, trapped in the bones of the Overworld.",
   "tooltip.celestial_dominion.solar_ore.where": "Found in deep deepslate: Y -63 to -48. Extremely rare.",
   "tooltip.celestial_dominion.abyssal_ore.lore": "The Netherstone remembers a darkness older than its fires.",
@@ -41,21 +34,18 @@
   "tooltip.celestial_dominion.celestial_ore.lore": "A fragment of the void, crystallized beneath the End's silence.",
   "tooltip.celestial_dominion.celestial_ore.where": "Found in End Stone: Y 4 to 22. The rarest vein.",
   "tooltip.celestial_dominion.ore.new_chunks": "World generation affects newly generated chunks only.",
-
   "tooltip.celestial_dominion.solar_ingot": "The heart-metal released from Solar Ore. Warm to the touch, even in the void.",
   "tooltip.celestial_dominion.abyssal_ingot": "The condensed darkness of Abyssal Ore. Cold, dense, and hungry for light.",
   "tooltip.celestial_dominion.celestial_ingot": "The crystallized essence of Celestial Ore. Matter touched by the outer firmament.",
   "tooltip.celestial_dominion.solar_template": "A smithing pattern recovered from a fallen sun-temple. Upgrades Netherite into Solar Regalia.",
   "tooltip.celestial_dominion.abyssal_template": "A forbidden pattern etched in the deep Nether. Upgrades Netherite into Abyssal Regalia.",
   "tooltip.celestial_dominion.celestial_catalyst": "The convergence of Solarite, Abyssal, and Celestial power. Required for the final ascension.",
-
   "tooltip.celestial_dominion.solar_armor.lore": "Relics of the First Dawn. Their plates burn with the memory of a star.",
   "tooltip.celestial_dominion.solar_armor.bonus": "FULL SET: Fire Resistance, Strength III, Haste II, Speed II; attackers are scorched.",
   "tooltip.celestial_dominion.abyssal_armor.lore": "Regalia of the Drowned King. The void bends around its wearer.",
   "tooltip.celestial_dominion.abyssal_armor.bonus": "FULL SET: Resistance III, Regeneration II, Absorption III; nearby foes are slowed and frozen. Immune to knockback.",
   "tooltip.celestial_dominion.celestial_armor.lore": "The final mantle. Its wearer stands between the stars and the abyss.",
   "tooltip.celestial_dominion.celestial_armor.bonus": "FULL SET: Flight, Fire Resistance, Strength IV, Haste II, Speed II, Resistance IV, Regeneration II, Absorption V; freezes nearby foes and scorches attackers.",
-
   "tooltip.celestial_dominion.solar_sword.lore": "A blade quenched in the corona of a dying sun.",
   "tooltip.celestial_dominion.solar_sword.ability": "RIGHT-CLICK — SOLAR RUPTURE: Lunge forward; blast foes within 7 blocks for 13 hearts, ignite for 8 seconds, and hurl them back.",
   "tooltip.celestial_dominion.abyssal_sword.lore": "A blade that cuts the distance between the living and the void.",
@@ -63,5 +53,24 @@
   "tooltip.celestial_dominion.celestial_sword.lore": "The convergence of dawn and oblivion, forged into a single edge.",
   "tooltip.celestial_dominion.celestial_sword.ability": "RIGHT-CLICK — GENESIS: Unleash Solar Rupture and Event Horizon together; restore 8 hearts.",
   "tooltip.celestial_dominion.sword.cooldown_35": "Ability cooldown: 35 seconds.",
-  "tooltip.celestial_dominion.sword.cooldown_25": "Ability cooldown: 25 seconds."
+  "tooltip.celestial_dominion.sword.cooldown_25": "Ability cooldown: 25 seconds.",
+  "item.celestial_dominion.solar_pickaxe": "Sunshard, Pick of the First Dawn",
+  "item.celestial_dominion.solar_axe": "Pyrecleaver, Emberforged Axe",
+  "item.celestial_dominion.solar_shovel": "Dawncarver, Spade of Cinders",
+  "item.celestial_dominion.solar_hoe": "Solstice, Harvester of Flame",
+  "item.celestial_dominion.solar_multitool": "Helios Engine, Solar Omnitool",
+  "item.celestial_dominion.abyssal_pickaxe": "Gravemaw, Pick of the Deep",
+  "item.celestial_dominion.abyssal_axe": "Nightfall, Axe of the Drowned King",
+  "item.celestial_dominion.abyssal_shovel": "Abyssal Delver, Spade of the Trench",
+  "item.celestial_dominion.abyssal_hoe": "Black Tide, Harvester of the Void",
+  "item.celestial_dominion.abyssal_multitool": "Event Horizon, Abyssal Omnitool",
+  "item.celestial_dominion.celestial_pickaxe": "Firmament, Starbreaker Pick",
+  "item.celestial_dominion.celestial_axe": "Astral Verdict, Axe of the Heavens",
+  "item.celestial_dominion.celestial_shovel": "Worldshaper, Spade of Creation",
+  "item.celestial_dominion.celestial_hoe": "Evergrowth, Celestial Harvester",
+  "item.celestial_dominion.celestial_multitool": "Singularity, Tool of Ascension",
+  "tooltip.celestial_dominion.solar_tools": "Solar-forged tool. Its edge carries a living ember; exceptionally fast and durable.",
+  "tooltip.celestial_dominion.abyssal_tools": "Abyss-forged tool. Its cold edge drinks in the light and leaves the stone silent.",
+  "tooltip.celestial_dominion.celestial_tools": "A tool shaped from stellar matter. Its impossible edge cuts through the work of lesser metals.",
+  "tooltip.celestial_dominion.multitool": "OMNITOOL: mines stone, ores, wood and earth; also strips logs, scrapes copper, paths dirt, douses campfires and tills soil."
 }
