@@ -9,11 +9,14 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: build-\${{ github.workflow }}-\${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-    # Pin the runner image so Mesa/Xvfb behavior does not drift with ubuntu-latest.
     runs-on: ubuntu-24.04
-    timeout-minutes: 8
+    timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -24,8 +27,8 @@ jobs:
           distribution: temurin
           java-version: '25'
 
-      # Cache dependencies, transformed Minecraft/NeoForge artifacts, and the
-      # 465 MiB vanilla asset set used by runClient.
+      # setup-gradle caches dependencies, wrapper distributions, transformed
+      # Minecraft/NeoForge artifacts and Gradle's local build cache.
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
         with:
@@ -33,47 +36,52 @@ jobs:
             caches
             notifications
             jdks
-          # Same-repository PRs can refresh their own merge-ref cache; fork PRs
-          # stay read-only and cannot write cache entries.
-          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork }}
+          cache-read-only: \${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork }}
+
+      # runClient downloads the vanilla asset index and hundreds of MiB of
+      # objects outside GRADLE_USER_HOME. Cache that separately from Gradle.
+      - name: Cache Minecraft client assets
+        uses: actions/cache@v4
+        with:
+          path: run/assets
+          key: minecraft-assets-\${{ runner.os }}-\${{ hashFiles('gradle.properties') }}
 
       - name: Install Pillow
-        run: python -m pip install pillow
+        run: python -m pip install --disable-pip-version-check pillow
 
       - name: Generate item icons and armor atlases
         run: python scripts/generate_textures.py
 
-      - name: Generate 3D relic models and animated textures
+      - name: Generate vanilla-style tool and weapon sprites
         run: python scripts/generate_relic_assets.py
 
       - name: Validate generated assets
         run: python scripts/test_assets.py
 
-      - name: Build mod
-        run: ./gradlew build --no-daemon
+      - name: Test client-log checker
+        run: python scripts/check_client_model_bake.py --self-test
 
-      # Minecraft 26.3 requests an sRGB GLX framebuffer that llvmpipe/Xvfb
-      # does not expose. Use Mesa's software Vulkan driver instead. NeoForge's
-      # early loading window must also be disabled in this headless session.
+      # ModDevGradle's CI binary-patch path skips expensive Minecraft
+      # decompile/recompile work. The same Gradle daemon is reused by runClient.
+      - name: Build mod
+        run: ./gradlew build --console=plain -Pneogradle.subsystems.decompiler.enabled=false
+
       - name: Install headless Vulkan runtime
         run: |
-          sudo apt-get update
-          sudo apt-get install -y xvfb mesa-vulkan-drivers vulkan-tools
+          sudo apt-get install -y --no-install-recommends xvfb mesa-vulkan-drivers
 
-      - name: Smoke-test client model baking
+      - name: Smoke-test client resource loading
         shell: bash
         env:
           SDL_VIDEO_DRIVER: x11
         run: |
           set -euo pipefail
 
-          # Ubuntu/Mesa package versions do not keep the Lavapipe ICD filename
-          # stable. Discover it instead of assuming one distro-specific path.
           VK_ICD_FILENAMES="$(find /usr/share/vulkan/icd.d /etc/vulkan/icd.d \
             -maxdepth 1 -type f \( -iname '*lvp*.json' -o -iname '*lavapipe*.json' \) \
             -print -quit 2>/dev/null || true)"
           if [ -z "$VK_ICD_FILENAMES" ]; then
-            echo "Lavapipe Vulkan ICD was not installed. Available ICD manifests:"
+            echo "Lavapipe Vulkan ICD was not installed. Available manifests:"
             find /usr/share/vulkan/icd.d /etc/vulkan/icd.d -maxdepth 1 -type f -print 2>/dev/null || true
             exit 1
           fi
@@ -91,58 +99,9 @@ jobs:
             printf 'earlyWindowControl = false\n' > run/config/fml.toml
           fi
 
-          timeout --signal=TERM --kill-after=5s 120s xvfb-run -a -s "-screen 0 854x480x24 +extension GLX +render" bash -lc '
-            set -e
-            vulkaninfo --summary
-            ./gradlew runClient --no-daemon
-          ' > "$RUNNER_TEMP/client-smoke.log" 2>&1 &
-          smoke_pid=$!
+          log_file="run/logs/latest.log"
+          smoke_log="$RUNNER_TEMP/client-smoke.log"
+          rm -f "$log_file" "$smoke_log"
 
-          deadline=$((SECONDS + 125))
-          reload_seen=0
-          while (( SECONDS < deadline )); do
-            if grep -q "Reloading ResourceManager" run/logs/latest.log 2>/dev/null; then
-              # Give asynchronous model baking/resource reload callbacks time
-              # to finish, then stop the interactive client instead of burning
-              # the rest of the timeout waiting for a user to close it.
-              sleep 15
-              reload_seen=1
-              break
-            fi
-
-            if grep -Eq "Failed to create backend|Vulkan is not supported|Couldn't find matching GLX visual" run/logs/latest.log 2>/dev/null; then
-              echo "Minecraft graphics backend failed before resource reload:"
-              tail -n 100 run/logs/latest.log
-              pkill -TERM -f '[n]et.neoforged.devlaunch.Main' || true
-              kill "$smoke_pid" 2>/dev/null || true
-              wait "$smoke_pid" || true
-              exit 1
-            fi
-
-            if ! kill -0 "$smoke_pid" 2>/dev/null; then
-              break
-            fi
-            sleep 2
-          done
-
-          if [ "$reload_seen" -eq 1 ]; then
-            pkill -TERM -f '[n]et.neoforged.devlaunch.Main' || true
-          else
-            echo "Client did not reach resource reload within 120 seconds."
-            tail -n 120 "$RUNNER_TEMP/client-smoke.log"
-            kill "$smoke_pid" 2>/dev/null || true
-            wait "$smoke_pid" || true
-            exit 1
-          fi
-
-          wait "$smoke_pid" || true
-          cat "$RUNNER_TEMP/client-smoke.log"
-          python scripts/check_client_model_bake.py run/logs/latest.log
-
-      - name: Upload mod JAR
-        uses: actions/upload-artifact@v4
-        with:
-          name: celestial-dominion-minecraft-26.3
-          path: build/libs/*.jar
-          if-no-files-found: error
-          retention-days: 30
+          # Keep a hard upper bound, but stop only after resource reload and
+          # atlas creation have settled. No broad 
