@@ -119,12 +119,24 @@ def display():
     }
 
 
+def ingredient_display():
+    return {
+        "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 2.5, 0], "scale": [0.75, 0.75, 0.75]},
+        "thirdperson_lefthand": {"rotation": [0, 0, 0], "translation": [0, 2.5, 0], "scale": [0.75, 0.75, 0.75]},
+        "firstperson_righthand": {"rotation": [0, -45, 0], "translation": [0, 1.5, 0], "scale": [0.8, 0.8, 0.8]},
+        "firstperson_lefthand": {"rotation": [0, 135, 0], "translation": [0, 1.5, 0], "scale": [0.8, 0.8, 0.8]},
+        "gui": {"rotation": [20, -35, 0], "translation": [0, 0, 0], "scale": [0.95, 0.95, 0.95]},
+        "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.65, 0.65, 0.65]},
+        "fixed": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [0.85, 0.85, 0.85]},
+    }
+
+
 def model_json(item_id, elements, handheld=True):
     return {
         "parent": "minecraft:item/handheld",
         "textures": {"layer0": f"celestial_dominion:item/{item_id}"},
         "elements": elements,
-        "display": display(),
+        "display": display() if handheld else ingredient_display(),
     }
 
 
