@@ -82,12 +82,12 @@ public final class AbilitySwordItem extends Item {
         level.sendParticles(
                 ParticleTypes.FLAME,
                 player.getX(), player.getY() + 1.0, player.getZ(),
-                180, 4.0, 1.5, 4.0, 0.12
+                72, 4.0, 1.5, 4.0, 0.12
         );
         level.sendParticles(
                 ParticleTypes.EXPLOSION,
                 player.getX(), player.getY() + 1.0, player.getZ(),
-                8, 2.0, 1.0, 2.0, 0.05
+                4, 2.0, 1.0, 2.0, 0.05
         );
     }
 
@@ -112,12 +112,12 @@ public final class AbilitySwordItem extends Item {
         level.sendParticles(
                 ParticleTypes.SNOWFLAKE,
                 player.getX(), player.getY() + 1.0, player.getZ(),
-                220, 6.0, 2.0, 6.0, 0.08
+                80, 6.0, 2.0, 6.0, 0.08
         );
         level.sendParticles(
                 ParticleTypes.PORTAL,
                 player.getX(), player.getY() + 1.0, player.getZ(),
-                140, 5.0, 2.0, 5.0, 0.3
+                48, 5.0, 2.0, 5.0, 0.3
         );
     }
 }
