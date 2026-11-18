@@ -37,6 +37,27 @@ jobs:
       - name: Build mod
         run: ./gradlew build
 
+      # A normal Gradle build does not bake client item models. Launch a real
+      # NeoForge client under a virtual X server and inspect its resource reload
+      # log so bad cuboid UVs are caught before the artifact is published.
+      - name: Install headless graphics runtime
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgl1-mesa-dri
+
+      - name: Smoke-test client model baking
+        shell: bash
+        run: |
+          set +e
+          timeout --signal=TERM 240s xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient --no-daemon
+          status=$?
+          set -e
+          if [ "$status" -ne 0 ] && [ "$status" -ne 124 ]; then
+            echo "NeoForge client failed before the smoke-test timeout (exit $status)"
+            exit "$status"
+          fi
+          python scripts/check_client_model_bake.py run/logs/latest.log
+
       - name: Upload mod JAR
         uses: actions/upload-artifact@v4
         with:
