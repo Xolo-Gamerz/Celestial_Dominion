@@ -2,6 +2,7 @@
 """Fast resource validation for Celestial Dominion; no Minecraft launch required."""
 from pathlib import Path
 import json
+import re
 import sys
 from PIL import Image
 
@@ -110,6 +111,64 @@ def main():
             if not recipe or recipe.get("type") != "minecraft:smithing_transform":
                 fail(f"missing smithing recipe: {material}_{kind}")
 
+    # Static balance regression checks: Solar is the damage path, Abyssal
+    # is the durability/defence path, and Celestial is the final fusion.
+    java_items = ROOT.parent / "java/dev/xolo/celestialdominion/content/ModItems.java"
+    source = java_items.read_text(encoding="utf-8") if java_items.exists() else ""
+    if not source:
+        fail("ModItems.java missing; cannot validate combat-role configuration")
+    else:
+        def armor_stats(material):
+            match = re.search(
+                rf'armor\("{material}",\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*([\d.]+)F,\s*([\d.]+)F\)',
+                source,
+            )
+            if not match:
+                fail(f"{material}: armor stats declaration not found")
+                return (0, 0, 0)
+            values = [float(value) for value in match.groups()]
+            return (sum(values[1:5]), values[5], values[6])
+
+        solar_armor = armor_stats("solar")
+        abyssal_armor = armor_stats("abyssal")
+        celestial_armor = armor_stats("celestial")
+        if not (abyssal_armor[0] > solar_armor[0] and abyssal_armor[1] > solar_armor[1]):
+            fail("Abyssal armor must be more defensive/tough than Solar armor")
+        if not (celestial_armor[0] > abyssal_armor[0] and celestial_armor[1] > abyssal_armor[1]):
+            fail("Celestial armor must exceed Abyssal defense and toughness")
+
+        def material_bonus(name):
+            match = re.search(
+                rf'ToolMaterial {name} = new ToolMaterial\(\s*[^,]+,\s*\d+,\s*[\d.]+F,\s*([\d.]+)F',
+                source,
+            )
+            if not match:
+                fail(f"{name}: ToolMaterial declaration not found")
+                return 0.0
+            return float(match.group(1))
+
+        def sword_damage(name, material):
+            match = re.search(
+                rf'p\.sword\({material},\s*([\d.]+)F,\s*-[\d.]+F\)',
+                source,
+            )
+            if not match:
+                fail(f"{name}: sword damage declaration not found")
+                return 0.0
+            return float(match.group(1)) + material_bonus(material)
+
+        solar_sword = sword_damage("Solar", "SOLAR_TOOL")
+        abyssal_sword = sword_damage("Abyssal", "ABYSSAL_TOOL")
+        celestial_sword = sword_damage("Celestial", "CELESTIAL_TOOL")
+        if not (solar_sword > abyssal_sword and celestial_sword > solar_sword):
+            fail("Sword damage must follow Solar offence > Abyssal control and Celestial fusion")
+
+        solar_mining = material_bonus("SOLAR_MINING_TOOL")
+        abyssal_mining = material_bonus("ABYSSAL_MINING_TOOL")
+        celestial_mining = material_bonus("CELESTIAL_MINING_TOOL")
+        if not (solar_mining > abyssal_mining and celestial_mining > solar_mining):
+            fail("Mining-tool damage bonus must follow Solar offence > Abyssal and Celestial fusion")
+
     if ERRORS:
         print(f"ASSET VALIDATION FAILED ({len(ERRORS)} issue(s))")
         for error in ERRORS:
@@ -121,6 +180,7 @@ def main():
     print(" - all 18 animated texture sheets and metadata are valid")
     print(" - 9 armor atlases and 3 wing textures have expected dimensions")
     print(" - all 15 tool smithing recipes exist")
+    print(" - Solar/Abyssal/Celestial combat-role balance declarations are consistent")
     return 0
 
 
