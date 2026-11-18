@@ -72,6 +72,21 @@ def main():
             if not meta or meta.get("animation", {}).get("width") != 64 or meta.get("animation", {}).get("height") != 64:
                 fail(f"{name}: animation metadata must declare 64x64 frames")
 
+    # Ingredients and smithing relics also use 3D cuboids rather than flat icons.
+    for name in ("solar_ingot", "abyssal_ingot", "celestial_ingot",
+                 "solar_smithing_template", "abyssal_smithing_template",
+                 "celestial_catalyst"):
+        model_path = ASSETS / "models/item" / f"{name}.json"
+        item_path = ASSETS / "items" / f"{name}.json"
+        model = read_json(model_path) if model_path.exists() else None
+        item = read_json(item_path) if item_path.exists() else None
+        if not model or len(model.get("elements", [])) < 3:
+            fail(f"{name}: expected a 3D cuboid model")
+        if model and model.get("parent") != "minecraft:item/handheld":
+            fail(f"{name}: flat generated parent would draw a sprite behind the cuboids")
+        if not item or item.get("model", {}).get("model") != f"celestial_dominion:item/{name}":
+            fail(f"{name}: client item does not point to its cuboid model")
+
     # Material textures must be valid native armor UV atlases.
     for material in materials:
         for layer in ("humanoid", "humanoid_leggings", "humanoid_baby"):
@@ -93,7 +108,7 @@ def main():
         return 1
     print("ASSET VALIDATION PASSED")
     print(" - all JSON resources parse")
-    print(" - 18 relic models contain 3D cuboid geometry")
+    print(" - 18 animated relic models and 6 ingredient models contain 3D cuboid geometry")
     print(" - all 18 animated texture sheets and metadata are valid")
     print(" - 9 armor atlas files have expected dimensions")
     print(" - all 15 tool smithing recipes exist")
