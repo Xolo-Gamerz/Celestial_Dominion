@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Generate Celestial Dominion's 3D item geometry and square material textures.
+"""Generate vanilla-style, pixel-art item sprites and flat Minecraft item models.
 
-Uses vanilla cuboid item models: no custom render loop, shaders, or per-frame
-Java work. Item textures remain square for safe Minecraft 26.3 cuboid baking.
+The tools deliberately use Minecraft's normal 2D handheld rendering path.
+There are no custom cuboids, oversized display transforms, shaders, or runtime
+renderers. Artwork is original and generated at native 32x32 pixel resolution.
 """
 from pathlib import Path
 import json
@@ -13,264 +14,221 @@ MODELS = ROOT / "models/item"
 TEXTURES = ROOT / "textures/item"
 
 PALETTES = {
-    "solar": {"outline": (43, 13, 17, 255), "dark": (100, 29, 20, 255),
-              "metal": (183, 61, 25, 255), "light": (255, 139, 37, 255),
-              "gold": (255, 207, 82, 255), "white": (255, 247, 196, 255)},
-    "abyssal": {"outline": (8, 9, 25, 255), "dark": (29, 25, 62, 255),
-                "metal": (76, 57, 128, 255), "light": (133, 89, 203, 255),
-                "gold": (45, 222, 220, 255), "white": (211, 255, 255, 255)},
-    "celestial": {"outline": (37, 38, 66, 255), "dark": (94, 101, 139, 255),
-                  "metal": (176, 184, 211, 255), "light": (229, 232, 247, 255),
-                  "gold": (255, 207, 105, 255), "white": (255, 255, 248, 255)},
+    "solar": {
+        "outline": (48, 14, 18, 255), "handle": (103, 35, 25, 255),
+        "handle_light": (170, 75, 37, 255), "metal_dark": (132, 48, 24, 255),
+        "metal": (220, 105, 34, 255), "edge": (255, 190, 73, 255),
+        "shine": (255, 239, 177, 255), "gem": (255, 111, 35, 255),
+    },
+    "abyssal": {
+        "outline": (10, 12, 28, 255), "handle": (38, 31, 67, 255),
+        "handle_light": (77, 62, 119, 255), "metal_dark": (48, 42, 89, 255),
+        "metal": (104, 79, 158, 255), "edge": (63, 218, 220, 255),
+        "shine": (203, 255, 255, 255), "gem": (25, 178, 198, 255),
+    },
+    "celestial": {
+        "outline": (47, 48, 70, 255), "handle": (112, 116, 148, 255),
+        "handle_light": (173, 178, 204, 255), "metal_dark": (143, 151, 184, 255),
+        "metal": (218, 221, 238, 255), "edge": (255, 211, 111, 255),
+        "shine": (255, 255, 242, 255), "gem": (255, 226, 151, 255),
+    },
 }
+
 KINDS = ("pickaxe", "axe", "shovel", "hoe", "multitool", "sword")
 
 
-def face(uv):
-    u0, v0, u1, v1 = uv
-    # Front/back get the full artwork. Side, top and bottom faces sample
-    # narrow bevel strips from the atlas edges instead of stretching the
-    # complete front design around every side of each cuboid.
-    return {
-        "north": {"uv": [u0, v0, u1, v1], "texture": "#layer0"},
-        "south": {"uv": [u0, v0, u1, v1], "texture": "#layer0"},
-        "east": {"uv": [max(u0, u1-4), v0, u1, v1], "texture": "#layer0"},
-        "west": {"uv": [u0, v0, min(u1, u0+4), v1], "texture": "#layer0"},
-        "up": {"uv": [u0, v0, u1, min(v1, v0+4)], "texture": "#layer0"},
-        "down": {"uv": [u0, max(v0, v1-4), u1, v1], "texture": "#layer0"},
-    }
+def line(draw, points, fill, width=1):
+    draw.line(points, fill=fill, width=width)
 
 
-def cube(a, b, uv, name=None):
-    # UV coordinates are pixel coordinates on the 64x64 animation frame.
-    # Each cuboid uses a dedicated atlas region so haft, forged head and gem
-    # do not all sample the same four pixels.
-    return {"from": a, "to": b, "faces": face(uv)}
+def outlined_polygon(draw, points, fill, outline):
+    draw.polygon(points, fill=fill, outline=outline)
 
 
-def add_gem(elements, x=7, y=11, z=5):
-    elements.append(cube([x, y, z], [x+2, y+2, z+2], [4, 8, 8, 12]))
+def draw_handle(draw, p, start=(7, 27), end=(22, 12), width=4):
+    # Dark pixel outline, wooden core and one restrained highlight.
+    line(draw, [start, end], p["outline"], width + 2)
+    line(draw, [start, end], p["handle"], width)
+    line(draw, [(start[0]+1, start[1]-1), (end[0]+1, end[1]-1)],
+         p["handle_light"], 1)
+    draw.point((start[0], start[1]-1), fill=p["edge"])
 
 
-def tool_elements(kind):
-    e = []
-    # Octagonal-looking haft: three overlapping bevelled cuboids and a pommel.
-    e += [
-        cube([7, 0, 7], [9, 13, 9], [2, 1, 13, 62]),
-        cube([6.5, 1, 7.2], [7.5, 12, 8.8], [2, 1, 13, 62]),
-        cube([8.5, 1, 7.2], [9.5, 12, 8.8], [2, 1, 13, 62]),
-        cube([6, 0, 6], [10, 1.5, 10], [19, 32, 34, 46]),
-        cube([7, 10, 6], [9, 11, 10], [19, 32, 34, 46]),
-    ]
-    if kind == "pickaxe":
-        e += [cube([2, 12, 6], [14, 14, 10], [16, 0, 63, 31]),
-              cube([1, 11, 6], [4, 15, 10], [16, 0, 63, 31]),
-              cube([12, 11, 6], [15, 15, 10], [16, 0, 63, 31]),
-              cube([5, 13, 5], [11, 15, 11], [19, 32, 34, 46])]
-    elif kind == "axe":
-        e += [cube([8, 10, 6], [15, 15, 10], [16, 0, 63, 31]),
-              cube([10, 12, 5], [15, 14, 11], [16, 0, 63, 31]),
-              cube([7, 12, 6], [10, 14, 10], [16, 0, 63, 31]),
-              cube([8, 13, 5], [11, 15, 11], [19, 32, 34, 46])]
-    elif kind == "shovel":
-        e += [cube([5, 12, 5], [11, 16, 11], [16, 0, 63, 31]),
-              cube([6, 13, 4], [10, 16, 12], [16, 0, 63, 31]),
-              cube([7, 14, 4], [9, 16, 12], [19, 32, 34, 46])]
-    elif kind == "hoe":
-        e += [cube([8, 12, 6], [15, 14, 10], [16, 0, 63, 31]),
-              cube([10, 11, 6], [14, 15, 10], [16, 0, 63, 31]),
-              cube([8, 13, 5], [11, 15, 11], [19, 32, 34, 46])]
-    else:
-        # The Omnitool has a pick crown, an axe blade, and a spade/hoe edge.
-        e += [cube([2, 12, 6], [14, 14, 10], [16, 0, 63, 31]),
-              cube([1, 11, 6], [4, 15, 10], [16, 0, 63, 31]),
-              cube([12, 11, 6], [15, 15, 10], [16, 0, 63, 31]),
-              cube([9, 9, 5], [15, 13, 11], [16, 0, 63, 31]),
-              cube([5, 13, 5], [11, 16, 11], [16, 0, 63, 31]),
-              cube([7, 13, 4], [9, 16, 12], [19, 32, 34, 46])]
-    add_gem(e)
-    return e
+def draw_pickaxe(draw, p):
+    # Broad, unmistakable pick head with two tapered tips.
+    outlined_polygon(draw,
+        [(4, 7), (8, 4), (13, 6), (18, 7), (24, 3), (28, 5),
+         (26, 10), (19, 12), (13, 10), (8, 13), (5, 11)],
+        p["metal_dark"], p["outline"])
+    outlined_polygon(draw,
+        [(6, 7), (9, 6), (14, 8), (19, 9), (24, 5), (26, 6),
+         (25, 8), (19, 11), (13, 9), (8, 11)],
+        p["metal"], p["outline"])
+    line(draw, [(8, 7), (14, 9), (19, 10), (24, 7)], p["shine"], 1)
+    draw.point((25, 6), fill=p["edge"])
 
 
-def sword_elements():
-    return [
-        cube([7, 0, 7], [9, 4, 9], [2, 1, 13, 62]),
-        cube([5, 3, 6], [11, 5, 10], [19, 32, 34, 46]),
-        cube([7, 4, 7], [9, 6, 9], [19, 32, 34, 46]),
-        cube([6, 6, 6], [10, 15, 10], [16, 0, 63, 31]),
-        cube([5.5, 7, 7], [6.5, 14, 9], [16, 0, 63, 31]),
-        cube([9.5, 7, 7], [10.5, 14, 9], [16, 0, 63, 31]),
-        cube([7, 14, 6], [9, 16, 10], [16, 0, 63, 31]),
-        cube([7, 1, 6], [9, 3, 10], [19, 32, 34, 46]),
-        cube([6, 0, 6], [10, 1, 10], [19, 32, 34, 46]),
-        cube([6, 5, 5], [10, 7, 11], [19, 32, 34, 46]),
-    ]
+def draw_axe(draw, p):
+    # Heavy wedge on one side of the haft, like a vanilla axe sprite.
+    outlined_polygon(draw,
+        [(8, 5), (16, 4), (23, 7), (28, 12), (27, 18), (22, 20),
+         (17, 16), (12, 12), (7, 12), (5, 9)],
+        p["metal_dark"], p["outline"])
+    outlined_polygon(draw,
+        [(10, 7), (16, 6), (22, 9), (26, 13), (25, 16), (22, 17),
+         (17, 13), (12, 10), (8, 10)],
+        p["metal"], p["outline"])
+    line(draw, [(10, 7), (17, 9), (23, 14)], p["shine"], 1)
+    line(draw, [(22, 17), (25, 16), (26, 13)], p["edge"], 1)
 
 
-def display():
-    return {
-        "thirdperson_righthand": {"rotation": [0, -90, 55], "translation": [0, 3.4, 1.2], "scale": [1.35, 1.35, 1.35]},
-        "thirdperson_lefthand": {"rotation": [0, 90, -55], "translation": [0, 3.4, 1.2], "scale": [1.35, 1.35, 1.35]},
-        "firstperson_righthand": {"rotation": [0, -90, 25], "translation": [1.1, 3.2, 1.1], "scale": [1.45, 1.45, 1.45]},
-        "firstperson_lefthand": {"rotation": [0, 90, -25], "translation": [1.1, 3.2, 1.1], "scale": [1.45, 1.45, 1.45]},
-        "gui": {"rotation": [20, -35, 0], "translation": [0, 0, 0], "scale": [1.1, 1.1, 1.1]},
-        "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.9, 0.9, 0.9]},
-        "fixed": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1.0, 1.0, 1.0]},
-    }
+def draw_shovel(draw, p):
+    # Narrow neck and broad spade head.
+    outlined_polygon(draw,
+        [(11, 3), (21, 3), (27, 8), (26, 16), (21, 21),
+         (11, 21), (6, 16), (5, 8)],
+        p["metal_dark"], p["outline"])
+    outlined_polygon(draw,
+        [(12, 5), (20, 5), (24, 9), (23, 15), (19, 19),
+         (13, 19), (9, 15), (8, 9)],
+        p["metal"], p["outline"])
+    outlined_polygon(draw, [(13, 7), (19, 7), (22, 10), (16, 16), (10, 10)],
+                     p["metal_dark"], p["edge"])
+    line(draw, [(13, 8), (17, 12)], p["shine"], 1)
 
 
-def ingredient_display():
-    return {
-        "thirdperson_righthand": {"rotation": [0, 0, 0], "translation": [0, 2.5, 0], "scale": [0.75, 0.75, 0.75]},
-        "thirdperson_lefthand": {"rotation": [0, 0, 0], "translation": [0, 2.5, 0], "scale": [0.75, 0.75, 0.75]},
-        "firstperson_righthand": {"rotation": [0, -45, 0], "translation": [0, 1.5, 0], "scale": [0.8, 0.8, 0.8]},
-        "firstperson_lefthand": {"rotation": [0, 135, 0], "translation": [0, 1.5, 0], "scale": [0.8, 0.8, 0.8]},
-        "gui": {"rotation": [20, -35, 0], "translation": [0, 0, 0], "scale": [0.95, 0.95, 0.95]},
-        "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.65, 0.65, 0.65]},
-        "fixed": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [0.85, 0.85, 0.85]},
-    }
+def draw_hoe(draw, p):
+    # Thin horizontal tine and a short downward hook.
+    outlined_polygon(draw,
+        [(5, 5), (10, 3), (16, 6), (22, 6), (27, 9), (26, 14),
+         (21, 15), (16, 11), (11, 11), (8, 15), (4, 13)],
+        p["metal_dark"], p["outline"])
+    outlined_polygon(draw,
+        [(7, 6), (10, 5), (16, 8), (22, 8), (25, 10), (24, 12),
+         (21, 12), (15, 10), (10, 9), (7, 12)],
+        p["metal"], p["outline"])
+    line(draw, [(8, 6), (16, 9), (23, 10)], p["shine"], 1)
 
 
-def model_json(item_id, elements, handheld=True, texture_size=64):
-    # Minecraft cuboid face UVs are expressed in a 0..16 model-space range,
-    # not source-image pixel coordinates. Convert our pixel-authored atlas
-    # rectangles before writing JSON. texture_size is the square texture
-    # (or first-frame) dimension, not the height of an animation strip.
-    uv_scale = 16.0 / texture_size
-    for element in elements:
-        for face_data in element["faces"].values():
-            face_data["uv"] = [round(value * uv_scale, 4) for value in face_data["uv"]]
-    return {
-        "parent": "minecraft:item/handheld",
-        "textures": {"layer0": f"celestial_dominion:item/{item_id}"},
-        "elements": elements,
-        "display": display() if handheld else ingredient_display(),
-    }
+def draw_multitool(draw, p):
+    # A recognizable pick head with a compact axe blade on the right.
+    outlined_polygon(draw,
+        [(3, 8), (7, 4), (13, 7), (18, 8), (24, 4), (28, 7),
+         (25, 12), (19, 13), (13, 11), (8, 14), (4, 12)],
+        p["metal_dark"], p["outline"])
+    outlined_polygon(draw,
+        [(5, 8), (8, 6), (14, 9), (19, 10), (24, 6), (26, 8),
+         (24, 10), (19, 12), (13, 10), (8, 12)],
+        p["metal"], p["outline"])
+    outlined_polygon(draw, [(20, 12), (27, 11), (29, 16), (25, 20), (21, 17)],
+                     p["metal_dark"], p["outline"])
+    line(draw, [(7, 8), (14, 10), (19, 11), (24, 8)], p["shine"], 1)
+    draw.point((27, 15), fill=p["edge"])
 
 
-def draw_atlas(material, kind, frame):
-    p = PALETTES[material]
-    im = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
-    d = ImageDraw.Draw(im)
-    o, dark, metal, light, gold, white = (p[k] for k in ("outline", "dark", "metal", "light", "gold", "white"))
+def draw_sword(draw, p):
+    # Blade, fuller, crossguard and grip; the diagonal sword silhouette stays
+    # readable in the inventory and at normal GUI scale.
+    outlined_polygon(draw, [(22, 2), (28, 5), (12, 24), (8, 21)],
+                     p["metal_dark"], p["outline"])
+    outlined_polygon(draw, [(23, 4), (26, 5), (12, 21), (10, 20)],
+                     p["metal"], p["outline"])
+    line(draw, [(23, 4), (13, 18)], p["shine"], 1)
+    line(draw, [(8, 19), (17, 27)], p["outline"], 4)
+    line(draw, [(8, 19), (17, 27)], p["edge"], 2)
+    line(draw, [(6, 24), (12, 18)], p["outline"], 3)
+    line(draw, [(7, 24), (11, 20)], p["metal"], 1)
+    outlined_polygon(draw, [(14, 25), (18, 28), (15, 31), (11, 28)],
+                     p["handle"], p["outline"])
+    draw.point((25, 5), fill=p["edge"])
 
-    # Haft UV tile: full-height faceted shaft, wrapped in a material-specific grip.
-    d.rectangle((2, 1, 13, 62), fill=o)
-    d.rectangle((4, 1, 11, 62), fill=dark)
-    d.rectangle((6, 1, 9, 62), fill=metal)
-    d.line((5, 2, 5, 61), fill=light, width=1)
-    d.line((10, 2, 10, 61), fill=gold, width=1)
-    for y in range(8, 61, 8):
-        d.line((3, y, 12, y-2), fill=gold, width=2)
-    d.rectangle((2, 57, 13, 63), fill=metal, outline=white)
-    d.point((7, 59), fill=white)
 
-    # Tool head / blade atlas tile. Distinct profiles, bevels and a strong edge highlight.
+def draw_signature(draw, material, p, kind):
+    # A few pixels, not a large glowing blob: lore identity without destroying
+    # the vanilla item silhouette.
     if kind == "sword":
-        d.polygon([(20, 29), (24, 2), (34, 0), (44, 2), (60, 29), (40, 25), (32, 31)], fill=o)
-        d.polygon([(24, 26), (28, 4), (34, 2), (42, 4), (56, 26), (40, 22), (32, 28)], fill=metal)
-        d.polygon([(29, 23), (32, 5), (35, 4), (52, 25), (40, 21)], fill=light)
-        d.line((34, 5, 48, 23), fill=white, width=2)
+        draw.point((20, 8), fill=p["gem"])
+        draw.point((18, 10), fill=p["edge"])
     elif kind == "pickaxe":
-        d.polygon([(17, 15), (24, 3), (40, 9), (57, 1), (63, 8), (49, 23), (34, 18), (22, 29)], fill=o)
-        d.polygon([(20, 14), (26, 7), (40, 13), (57, 5), (60, 9), (47, 19), (34, 15), (24, 24)], fill=metal)
-        d.line((24, 13, 40, 16, 56, 9), fill=white, width=2)
+        draw.point((15, 7), fill=p["gem"])
     elif kind == "axe":
-        d.polygon([(18, 3), (36, 4), (51, 10), (62, 21), (58, 29), (46, 27), (36, 19), (25, 25), (16, 18)], fill=o)
-        d.polygon([(21, 6), (36, 7), (50, 13), (58, 21), (53, 25), (44, 22), (34, 15), (25, 21), (20, 16)], fill=metal)
-        d.line((23, 8, 39, 12, 54, 21), fill=white, width=2)
+        draw.point((21, 10), fill=p["gem"])
     elif kind == "shovel":
-        d.polygon([(29, 1), (47, 1), (61, 12), (56, 27), (39, 31), (22, 27), (16, 12)], fill=o)
-        d.polygon([(31, 4), (45, 4), (56, 13), (51, 24), (39, 28), (26, 24), (21, 13)], fill=metal)
-        d.polygon([(32, 7), (44, 7), (50, 14), (39, 24), (28, 14)], fill=light)
-        d.line((30, 10, 39, 18, 48, 10), fill=white, width=2)
+        draw.point((16, 11), fill=p["gem"])
     elif kind == "hoe":
-        d.polygon([(18, 4), (32, 1), (45, 7), (60, 8), (62, 19), (49, 22), (37, 15), (25, 22), (16, 15)], fill=o)
-        d.polygon([(20, 7), (32, 4), (45, 10), (57, 11), (58, 17), (48, 18), (36, 12), (25, 19), (20, 14)], fill=metal)
-        d.line((22, 8, 34, 8, 48, 14, 57, 14), fill=white, width=2)
+        draw.point((17, 8), fill=p["gem"])
     else:
-        d.polygon([(17, 11), (25, 1), (35, 9), (42, 0), (51, 10), (63, 7), (60, 23),
-                   (50, 27), (44, 20), (36, 31), (27, 21), (19, 27), (15, 19)], fill=o)
-        d.polygon([(20, 12), (26, 6), (35, 14), (42, 5), (50, 14), (59, 11), (56, 20),
-                   (49, 23), (43, 17), (36, 26), (28, 17), (21, 23), (18, 18)], fill=metal)
-        d.line((21, 13, 35, 18, 42, 10, 55, 16), fill=white, width=2)
-
-    # Gem tile and rune tile.
-    d.polygon([(24, 33), (30, 32), (34, 37), (31, 45), (24, 46), (19, 40)], fill=o, outline=white)
-    d.polygon([(25, 34), (29, 34), (32, 38), (29, 43), (25, 43), (22, 39)], fill=gold)
-    d.line((25, 35, 28, 38), fill=white, width=2)
-    d.rectangle((34, 33, 62, 62), fill=dark, outline=metal)
-    for i in range(4):
-        x = 38 + i * 6
-        d.line((x, 38, x+3, 42, x, 47), fill=gold, width=2)
-        d.point((x+2, 54), fill=light)
+        draw.point((17, 8), fill=p["gem"])
+        draw.point((24, 15), fill=p["edge"])
     if material == "solar":
-        # Flickering ember tongues and hot sparks.
-        shift = frame % 4
-        for x in (18, 29, 43, 55):
-            d.polygon([(x, 1+shift), (x+2, 7+shift), (x+4, 2+shift), (x+3, 11+shift)], fill=light)
-        d.line((18, 28, 25, 24, 30, 28), fill=gold, width=2)
+        draw.point((kind != "sword" and 12 or 19, 5), fill=p["edge"])
     elif material == "abyssal":
-        # A slow rift pulse and cyan arc.
-        d.ellipse((43-frame%3, 36-frame%2, 54+frame%3, 47+frame%2), outline=gold, width=2)
-        d.line((18, 28, 25, 23, 31, 27), fill=gold, width=2)
-        d.point((48, 41), fill=white)
+        draw.point((kind != "sword" and 19 or 16, 13), fill=p["shine"])
     else:
-        # Rotating constellation points.
-        for i in range(4):
-            x = 37 + ((frame*5 + i*7) % 25)
-            y = 36 + ((frame*3 + i*9) % 25)
-            d.line((x-2, y, x+2, y), fill=white, width=1)
-            d.line((x, y-2, x, y+2), fill=gold, width=1)
-    return im
+        draw.point((kind != "sword" and 14 or 22, 6), fill=p["shine"])
 
 
-def make_template_model(item_id):
-    return model_json(item_id, [
-        cube([2, 1, 7], [14, 15, 9], [0, 0, 32, 32], "plate"),
-        cube([3, 2, 6], [13, 14, 7], [0, 0, 32, 32]),
-        cube([5, 4, 5], [11, 12, 6], [0, 0, 32, 32]),
-        cube([6, 6, 4], [10, 10, 7], [0, 0, 32, 32]),
-    ], False, texture_size=32)
+def make_tool_sprite(material, kind):
+    p = PALETTES[material]
+    image = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(image)
+
+    if kind == "sword":
+        draw_sword(draw, p)
+    else:
+        draw_handle(draw, p)
+        if kind == "pickaxe":
+            draw_pickaxe(draw, p)
+        elif kind == "axe":
+            draw_axe(draw, p)
+        elif kind == "shovel":
+            draw_shovel(draw, p)
+        elif kind == "hoe":
+            draw_hoe(draw, p)
+        else:
+            draw_multitool(draw, p)
+
+    draw_signature(draw, material, p, kind)
+    return image
+
+
+def flat_model(item_id, handheld):
+    return {
+        "parent": "minecraft:item/handheld" if handheld else "minecraft:item/generated",
+        "textures": {"layer0": f"celestial_dominion:item/{item_id}"},
+    }
 
 
 def main():
     MODELS.mkdir(parents=True, exist_ok=True)
     TEXTURES.mkdir(parents=True, exist_ok=True)
+
     for material in PALETTES:
         for kind in KINDS:
             item_id = f"{material}_{kind}"
-            elements = sword_elements() if kind == "sword" else tool_elements(kind)
+            make_tool_sprite(material, kind).save(TEXTURES / f"{item_id}.png", optimize=True)
             (MODELS / f"{item_id}.json").write_text(
-                json.dumps(model_json(item_id, elements), indent=2) + "\n", encoding="utf-8")
-            # Keep cuboid model textures square and static. Minecraft 26.3's
-            # cuboid FaceBakery evaluates transparency against the full source
-            # image; vertical item animation strips can push frame UVs outside
-            # the image during baking. The material motion is handled by the
-            # lightweight held-item particle aura and animated armor wings.
-            name = f"{item_id}.png"
-            draw_atlas(material, kind, 0).save(TEXTURES / name, optimize=True)
-            meta_path = TEXTURES / f"{name}.mcmeta"
-            if meta_path.exists():
-                meta_path.unlink()
+                json.dumps(flat_model(item_id, handheld=True), indent=2) + "\n",
+                encoding="utf-8",
+            )
+            meta = TEXTURES / f"{item_id}.png.mcmeta"
+            if meta.exists():
+                meta.unlink()
 
-        # 3D, beveled ingots, templates and the final catalyst.
-        (MODELS / f"{material}_ingot.json").write_text(json.dumps(model_json(
-            f"{material}_ingot", [
-                cube([2, 5, 5], [14, 11, 11], [0, 0, 32, 32]),
-                cube([3, 6, 4], [13, 10, 12], [0, 0, 32, 32]),
-                cube([4, 7, 3], [12, 9, 13], [0, 0, 32, 32]),
-            ], False, texture_size=32), indent=2) + "\n", encoding="utf-8")
-        template_id = f"{material}_smithing_template"
-        if material != "celestial":
-            (MODELS / f"{template_id}.json").write_text(json.dumps(
-                make_template_model(template_id), indent=2) + "\n", encoding="utf-8")
-    (MODELS / "celestial_catalyst.json").write_text(json.dumps(model_json(
-        "celestial_catalyst", [
-            cube([3, 2, 6], [13, 14, 10], [0, 0, 32, 32], "crystal"),
-            cube([5, 4, 5], [11, 12, 11], [0, 0, 32, 32]),
-            cube([7, 6, 4], [9, 10, 12], [0, 0, 32, 32]),
-        ], False, texture_size=32), indent=2) + "\n", encoding="utf-8")
+        # Ingredients use vanilla's generated-item renderer, not cuboids.
+        for item_id in (f"{material}_ingot", f"{material}_smithing_template"):
+            if item_id.endswith("smithing_template") and material == "celestial":
+                continue
+            (MODELS / f"{item_id}.json").write_text(
+                json.dumps(flat_model(item_id, handheld=False), indent=2) + "\n",
+                encoding="utf-8",
+            )
+
+    catalyst = "celestial_catalyst"
+    (MODELS / f"{catalyst}.json").write_text(
+        json.dumps(flat_model(catalyst, handheld=False), indent=2) + "\n",
+        encoding="utf-8",
+    )
 
 
 if __name__ == "__main__":
