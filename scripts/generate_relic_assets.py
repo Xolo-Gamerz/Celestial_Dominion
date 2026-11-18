@@ -131,7 +131,15 @@ def ingredient_display():
     }
 
 
-def model_json(item_id, elements, handheld=True):
+def model_json(item_id, elements, handheld=True, texture_size=64):
+    # Minecraft cuboid face UVs are expressed in a 0..16 model-space range,
+    # not source-image pixel coordinates. Convert our pixel-authored atlas
+    # rectangles before writing JSON. texture_size is the square texture
+    # (or first-frame) dimension, not the height of an animation strip.
+    uv_scale = 16.0 / texture_size
+    for element in elements:
+        for face_data in element["faces"].values():
+            face_data["uv"] = [round(value * uv_scale, 4) for value in face_data["uv"]]
     return {
         "parent": "minecraft:item/handheld",
         "textures": {"layer0": f"celestial_dominion:item/{item_id}"},
@@ -223,7 +231,7 @@ def make_template_model(item_id):
         cube([3, 2, 6], [13, 14, 7], [0, 0, 32, 32]),
         cube([5, 4, 5], [11, 12, 6], [0, 0, 32, 32]),
         cube([6, 6, 4], [10, 10, 7], [0, 0, 32, 32]),
-    ], False)
+    ], False, texture_size=32)
 
 
 def main():
@@ -235,14 +243,16 @@ def main():
             elements = sword_elements() if kind == "sword" else tool_elements(kind)
             (MODELS / f"{item_id}.json").write_text(
                 json.dumps(model_json(item_id, elements), indent=2) + "\n", encoding="utf-8")
-            sheet = Image.new("RGBA", (64, 64*8), (0, 0, 0, 0))
-            for frame in range(8):
-                sheet.paste(draw_atlas(material, kind, frame), (0, frame*64))
+            # Keep cuboid model textures square and static. Minecraft 26.3's
+            # cuboid FaceBakery evaluates transparency against the full source
+            # image; vertical item animation strips can push frame UVs outside
+            # the image during baking. The material motion is handled by the
+            # lightweight held-item particle aura and animated armor wings.
             name = f"{item_id}.png"
-            sheet.save(TEXTURES / name, optimize=True)
-            (TEXTURES / f"{name}.mcmeta").write_text(json.dumps({
-                "animation": {"width": 64, "height": 64, "frametime": 3, "interpolate": False}
-            }, indent=2) + "\n", encoding="utf-8")
+            draw_atlas(material, kind, 0).save(TEXTURES / name, optimize=True)
+            meta_path = TEXTURES / f"{name}.mcmeta"
+            if meta_path.exists():
+                meta_path.unlink()
 
         # 3D, beveled ingots, templates and the final catalyst.
         (MODELS / f"{material}_ingot.json").write_text(json.dumps(model_json(
@@ -250,7 +260,7 @@ def main():
                 cube([2, 5, 5], [14, 11, 11], [0, 0, 32, 32]),
                 cube([3, 6, 4], [13, 10, 12], [0, 0, 32, 32]),
                 cube([4, 7, 3], [12, 9, 13], [0, 0, 32, 32]),
-            ], False), indent=2) + "\n", encoding="utf-8")
+            ], False, texture_size=32), indent=2) + "\n", encoding="utf-8")
         template_id = f"{material}_smithing_template"
         if material != "celestial":
             (MODELS / f"{template_id}.json").write_text(json.dumps(
@@ -260,7 +270,7 @@ def main():
             cube([3, 2, 6], [13, 14, 10], [0, 0, 32, 32], "crystal"),
             cube([5, 4, 5], [11, 12, 11], [0, 0, 32, 32]),
             cube([7, 6, 4], [9, 10, 12], [0, 0, 32, 32]),
-        ], False), indent=2) + "\n", encoding="utf-8")
+        ], False, texture_size=32), indent=2) + "\n", encoding="utf-8")
 
 
 if __name__ == "__main__":
