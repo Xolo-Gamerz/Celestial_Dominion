@@ -62,11 +62,22 @@ jobs:
       - name: Smoke-test client model baking
         shell: bash
         env:
-          VK_ICD_FILENAMES: /usr/share/vulkan/icd.d/lvp_icd.x86_64.json
           SDL_VIDEO_DRIVER: x11
         run: |
           set -euo pipefail
-          test -f "$VK_ICD_FILENAMES"
+
+          # Ubuntu/Mesa package versions do not keep the Lavapipe ICD filename
+          # stable. Discover it instead of assuming one distro-specific path.
+          VK_ICD_FILENAMES="$(find /usr/share/vulkan/icd.d /etc/vulkan/icd.d \
+            -maxdepth 1 -type f \( -iname '*lvp*.json' -o -iname '*lavapipe*.json' \) \
+            -print -quit 2>/dev/null || true)"
+          if [ -z "$VK_ICD_FILENAMES" ]; then
+            echo "Lavapipe Vulkan ICD was not installed. Available ICD manifests:"
+            find /usr/share/vulkan/icd.d /etc/vulkan/icd.d -maxdepth 1 -type f -print 2>/dev/null || true
+            exit 1
+          fi
+          export VK_ICD_FILENAMES
+          echo "Using Vulkan ICD: $VK_ICD_FILENAMES"
 
           mkdir -p run/config
           if [ -f run/config/fml.toml ]; then
