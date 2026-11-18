@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Generate Celestial Dominion's 3D item geometry and animated material atlases.
+"""Generate Celestial Dominion's 3D item geometry and square material textures.
 
 Uses vanilla cuboid item models: no custom render loop, shaders, or per-frame
-Java work. Minecraft's sprite animation system advances the 8-frame textures.
+Java work. Item textures remain square for safe Minecraft 26.3 cuboid baking.
 """
 from pathlib import Path
 import json
