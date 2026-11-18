@@ -60,9 +60,9 @@ public final class ModItems {
                 toughness, knockbackResistance, REPAIR_TAG, asset(assetName));
     }
 
-    private static final ArmorMaterial SOLAR_ARMOR = armor("solar", 220, 9, 15, 11, 8, 7.0F, 0.30F);
-    private static final ArmorMaterial ABYSSAL_ARMOR = armor("abyssal", 280, 13, 21, 16, 12, 15.0F, 0.80F);
-    private static final ArmorMaterial CELESTIAL_ARMOR = armor("celestial", 360, 16, 26, 20, 16, 22.0F, 1.0F);
+    private static final ArmorMaterial SOLAR_ARMOR = armor("solar", 220, 9, 15, 11, 8, 2.5F, 0.05F);
+    private static final ArmorMaterial ABYSSAL_ARMOR = armor("abyssal", 280, 13, 21, 16, 12, 4.0F, 0.20F);
+    private static final ArmorMaterial CELESTIAL_ARMOR = armor("celestial", 360, 16, 26, 20, 16, 5.0F, 0.25F);
 
     private static final ToolMaterial SOLAR_TOOL = new ToolMaterial(
             BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 12000, 16.0F, 8.0F, 30, REPAIR_TAG);
