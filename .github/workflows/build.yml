@@ -38,18 +38,26 @@ jobs:
         run: ./gradlew build
 
       # A normal Gradle build does not bake client item models. Launch a real
-      # NeoForge client under a virtual X server and inspect its resource reload
-      # log so bad cuboid UVs are caught before the artifact is published.
+      # NeoForge client under Xvfb with Mesa software GL. Explicitly enable GLX
+      # and force llvmpipe: the default hosted-runner Xvfb configuration may
+      # expose no usable GLX visual, causing Minecraft to abort before reload.
       - name: Install headless graphics runtime
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb libgl1-mesa-dri
+          sudo apt-get install -y xvfb libgl1 libglx-mesa0 libgl1-mesa-dri mesa-utils
 
       - name: Smoke-test client model baking
         shell: bash
+        env:
+          LIBGL_ALWAYS_SOFTWARE: "1"
+          GALLIUM_DRIVER: llvmpipe
         run: |
           set +e
-          timeout --signal=TERM 240s xvfb-run -a -s "-screen 0 1280x720x24" ./gradlew runClient --no-daemon
+          timeout --signal=TERM 240s xvfb-run -a -s "-screen 0 1280x720x24 +extension GLX +render -noreset" bash -lc '
+            set -e
+            glxinfo -B
+            ./gradlew runClient --no-daemon
+          '
           status=$?
           set -e
           if [ "$status" -ne 0 ] && [ "$status" -ne 124 ]; then
