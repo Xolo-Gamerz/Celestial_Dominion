@@ -1,5 +1,6 @@
 package dev.xolo.celestialdominion.item;
 
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.BlockTransformer;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.InteractionResult;
@@ -22,19 +23,22 @@ public final class CelestialMultitoolItem extends Item {
         Level level = context.getLevel();
         var transformers = level.registryAccess().lookupOrThrow(Registries.BLOCK_TRANSFORMER);
 
-        InteractionResult result = apply(context, transformers.getOrThrow(BlockTransformers.AXE).value());
+        InteractionResult result = apply(context, transformers.getOrThrow(BlockTransformers.AXE));
         if (result.consumesAction()) return result;
 
-        result = apply(context, transformers.getOrThrow(BlockTransformers.SHOVEL).value());
+        result = apply(context, transformers.getOrThrow(BlockTransformers.SHOVEL));
         if (result.consumesAction()) return result;
 
-        result = apply(context, transformers.getOrThrow(BlockTransformers.HOE).value());
+        result = apply(context, transformers.getOrThrow(BlockTransformers.HOE));
         if (result.consumesAction()) return result;
 
         return super.useOn(context);
     }
 
-    private static InteractionResult apply(UseOnContext context, BlockTransformer transformer) {
-        return transformer.transformBlock(context);
+    private static InteractionResult apply(
+            UseOnContext context,
+            Holder<BlockTransformer> transformer
+    ) {
+        return transformer.value().transformBlock(context, transformer);
     }
 }
