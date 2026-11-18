@@ -1,0 +1,20 @@
+{
+  "replace": false,
+  "values": [
+    "celestial_dominion:solar_pickaxe",
+    "celestial_dominion:solar_axe",
+    "celestial_dominion:solar_shovel",
+    "celestial_dominion:solar_hoe",
+    "celestial_dominion:solar_multitool",
+    "celestial_dominion:abyssal_pickaxe",
+    "celestial_dominion:abyssal_axe",
+    "celestial_dominion:abyssal_shovel",
+    "celestial_dominion:abyssal_hoe",
+    "celestial_dominion:abyssal_multitool",
+    "celestial_dominion:celestial_pickaxe",
+    "celestial_dominion:celestial_axe",
+    "celestial_dominion:celestial_shovel",
+    "celestial_dominion:celestial_hoe",
+    "celestial_dominion:celestial_multitool"
+  ]
+}
