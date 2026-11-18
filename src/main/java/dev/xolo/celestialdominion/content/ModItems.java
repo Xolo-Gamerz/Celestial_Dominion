@@ -18,6 +18,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.equipment.ArmorMaterial;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.minecraft.world.item.equipment.EquipmentAsset;
@@ -32,6 +33,10 @@ public final class ModItems {
     private static final TagKey<Item> REPAIR_TAG = TagKey.create(
             Registries.ITEM,
             Identifier.fromNamespaceAndPath(CelestialDominion.MOD_ID, "repairs_celestial_gear")
+    );
+    private static final TagKey<Block> INCORRECT_FOR_CELESTIAL_TOOL = TagKey.create(
+            Registries.BLOCK,
+            Identifier.fromNamespaceAndPath(CelestialDominion.MOD_ID, "incorrect_for_celestial_tool")
     );
 
     private static ResourceKey<EquipmentAsset> asset(String name) {
@@ -68,11 +73,11 @@ public final class ModItems {
 
     // Mining tools share each tier's speed, durability and repair material, but not sword-level damage.
     private static final ToolMaterial SOLAR_MINING_TOOL = new ToolMaterial(
-            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 12000, 16.0F, 3.0F, 30, REPAIR_TAG);
+            BlockTags.INCORRECT_FOR_DIAMOND_TOOL, 12000, 16.0F, 3.0F, 30, REPAIR_TAG);
     private static final ToolMaterial ABYSSAL_MINING_TOOL = new ToolMaterial(
             BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 18000, 18.0F, 5.0F, 30, REPAIR_TAG);
     private static final ToolMaterial CELESTIAL_MINING_TOOL = new ToolMaterial(
-            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 30000, 22.0F, 8.0F, 40, REPAIR_TAG);
+            INCORRECT_FOR_CELESTIAL_TOOL, 30000, 22.0F, 8.0F, 40, REPAIR_TAG);
 
     public static final DeferredItem<Item> SOLAR_ORE_ITEM = ITEMS.registerItem(
             "solar_ore", properties -> new BlockItem(ModBlocks.SOLAR_ORE.get(), properties));
@@ -137,6 +142,7 @@ public final class ModItems {
                 .delayedComponent(DataComponents.TOOL, context -> {
                     var blocks = context.lookup(Registries.BLOCK);
                     return new Tool(List.of(
+                            Tool.Rule.deniesDrops(blocks.getOrThrow(material.incorrectBlocksForDrops())),
                             Tool.Rule.minesAndDrops(blocks.getOrThrow(BlockTags.MINEABLE_WITH_PICKAXE), material.speed()),
                             Tool.Rule.minesAndDrops(blocks.getOrThrow(BlockTags.MINEABLE_WITH_AXE), material.speed()),
                             Tool.Rule.minesAndDrops(blocks.getOrThrow(BlockTags.MINEABLE_WITH_SHOVEL), material.speed()),
