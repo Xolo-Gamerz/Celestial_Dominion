@@ -8,7 +8,8 @@ Install JDK 25 and Gradle 9.2.1, then generate assets and build:
 ```sh
 python -m pip install pillow
 python scripts/generate_textures.py
-python scripts/generate_tool_textures.py
+python scripts/generate_relic_assets.py
+python scripts/test_assets.py
 ./gradlew build
 ```
 
@@ -16,7 +17,9 @@ The jar is written to `build/libs/`. GitHub Actions installs Pillow, generates t
 
 ## Current gameplay
 - Solar Overlord, Abyssal Sovereign and Celestial Ascendant armor, swords, pickaxes, axes, shovels, hoes and Omnitools.
-- Distinct armor defense/toughness/knockback resistance and sword damage/speed.
+- Solar: offence-first armor and sword profile; strong Strength and a fiery retaliation aura.
+- Abyssal: defence-first armor, high toughness/knockback resistance, regeneration and crowd control; its sword trades raw damage for control.
+- Celestial: combines both paths, with the strongest armor and the combined sword abilities.
 - Solar dash/shockwave and Abyssal pull/freeze/heal abilities; Celestial sword combines both.
 - Full-set buffs and flight for the fusion armor.
 - Three custom ore blocks, ingots, smithing-template/catalyst items, distinct generated tool silhouettes and native animated tool textures.
@@ -34,10 +37,15 @@ The jar is written to `build/libs/`. GitHub Actions installs Pillow, generates t
 - Abyssal tools and the Abyssal Omnitool are smithing upgrades from Netherite using the Abyssal Smithing Template and Abyssal Ingot.
 - Celestial tools are the final fusion: the matching Solar tool is the base, the matching Abyssal tool occupies the template slot, and the Celestial Catalyst is the addition.
 - Each Omnitool combines pickaxe, axe, shovel and hoe mining rules and supports log stripping, copper scraping/unwaxing, dirt pathing, campfire dousing and tilling. It is intentionally a single-block tool: no area mining or tick-driven particles.
-- Animated item textures use eight-frame 64x64 sheets and `.png.mcmeta`; Minecraft handles the animation client-side.
+- Tools and swords use native cuboid 3D item geometry, enlarged first-/third-person transforms, and eight-frame 64x64 animated material atlases. Minecraft advances the textures natively.
+- Held relics emit at most two tiny material particles per hand every five ticks on the server; no per-frame Java renderer or shader is used.
+- Ore blocks remain full 3D block models; ingots, templates and the catalyst have dedicated cuboid item models.
+
+## Automated asset tests
+`python scripts/test_assets.py` parses every resource JSON, checks all 18 3D relic models and animation sheets, verifies armor atlas dimensions, and confirms all 15 tool smithing recipes exist. GitHub Actions runs these checks before Gradle.
 
 ## Build caveat
-The project includes data-driven world generation, loot tables and all 15 smithing transformations.
+The project includes data-driven world generation, loot tables and all 15 smithing transformations. CI compilation does not replace an in-game rendering and combat playtest.
 - Solar full set retaliates by igniting attackers.
 - Abyssal and Celestial full sets slow/freeze nearby living entities.
 - Abyssal and Celestial full sets cancel player knockback.
