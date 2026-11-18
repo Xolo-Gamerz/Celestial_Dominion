@@ -3,16 +3,25 @@
     "humanoid": [
       {
         "texture": "celestial_dominion:abyssal"
+      },
+      {
+        "texture": "celestial_dominion:abyssal_ornament"
       }
     ],
     "humanoid_leggings": [
       {
         "texture": "celestial_dominion:abyssal"
+      },
+      {
+        "texture": "celestial_dominion:abyssal_ornament"
       }
     ],
     "humanoid_baby": [
       {
         "texture": "celestial_dominion:abyssal"
+      },
+      {
+        "texture": "celestial_dominion:abyssal_ornament"
       }
     ],
     "wings": [
