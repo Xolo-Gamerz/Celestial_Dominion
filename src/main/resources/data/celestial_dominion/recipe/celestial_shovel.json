@@ -1,6 +1,6 @@
 {
   "type": "minecraft:smithing_transform",
-  "template": "celestial_dominion:abyssal_smithing_template",
+  "template": "celestial_dominion:abyssal_shovel",
   "base": "celestial_dominion:solar_shovel",
   "addition": "celestial_dominion:celestial_catalyst",
   "result": {
