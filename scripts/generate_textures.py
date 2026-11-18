@@ -218,6 +218,48 @@ def make_ore_block(material):
     return im
 
 
+def make_wings(material):
+    """64x32 texture for the built-in humanoid WingsLayer (elytra geometry)."""
+    p = PALETTES[material]
+    im = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    outline, base, mid, accent, shine, white = (
+        p[k] for k in ("shadow", "base", "mid", "accent", "shine", "white")
+    )
+    # Two swept feather/energy vanes around the center hinge.
+    d.polygon([(30, 2), (24, 4), (15, 7), (4, 15), (2, 24), (10, 27),
+               (19, 23), (27, 17), (31, 13)], fill=base, outline=shine)
+    d.polygon([(34, 2), (40, 4), (49, 7), (60, 15), (62, 24), (54, 27),
+               (45, 23), (37, 17), (33, 13)], fill=base, outline=shine)
+    d.polygon([(29, 5), (22, 8), (12, 14), (7, 21), (14, 22),
+               (23, 17), (30, 11)], fill=mid, outline=accent)
+    d.polygon([(35, 5), (42, 8), (52, 14), (57, 21), (50, 22),
+               (41, 17), (34, 11)], fill=mid, outline=accent)
+    # Raised vane ridges and luminous edge seams.
+    d.line((29, 7, 21, 12, 12, 19, 6, 22), fill=shine, width=2)
+    d.line((35, 7, 43, 12, 52, 19, 58, 22), fill=shine, width=2)
+    d.line((28, 11, 20, 18, 14, 23), fill=accent, width=2)
+    d.line((36, 11, 44, 18, 50, 23), fill=accent, width=2)
+    d.polygon([(29, 1), (35, 1), (37, 8), (32, 15), (27, 8)],
+              fill=accent, outline=white)
+    d.rectangle((30, 4, 33, 10), fill=white)
+    # Material signature.
+    if material == "solar":
+        for x in (7, 14, 21, 43, 50, 57):
+            d.line((x, 18, x+2, 13), fill=shine, width=2)
+            d.point((x+2, 12), fill=white)
+    elif material == "abyssal":
+        for x in (8, 17, 24, 40, 47, 56):
+            d.ellipse((x-1, 15, x+2, 18), fill=accent, outline=white)
+        d.line((8, 25, 20, 20, 28, 15), fill=white, width=1)
+        d.line((56, 25, 44, 20, 36, 15), fill=white, width=1)
+    else:
+        for x, y in ((8, 17), (18, 12), (24, 19), (56, 17), (46, 12), (40, 19)):
+            d.line((x-2, y, x+2, y), fill=white, width=1)
+            d.line((x, y-2, x, y+2), fill=accent, width=1)
+    return im
+
+
 def make_armor_atlas(material, layer):
     p = PALETTES[material]
     im = Image.new("RGBA", (64, 32), p["shadow"])
@@ -282,6 +324,9 @@ def main():
         if material != "celestial":
             make_template(material).save(ROOT / "textures/item" / f"{material}_smithing_template.png")
         make_ore_block(material).save(ROOT / "textures/block" / f"{material}_ore.png")
+        wings = ROOT / "textures/entity/equipment/wings" / f"{material}.png"
+        wings.parent.mkdir(parents=True, exist_ok=True)
+        make_wings(material).save(wings)
         for layer in ("humanoid", "humanoid_leggings", "humanoid_baby"):
             out = ROOT / "textures/entity/equipment" / layer / f"{material}.png"
             out.parent.mkdir(parents=True, exist_ok=True)
