@@ -27,7 +27,7 @@ jobs:
           distribution: temurin
           java-version: '25'
 
-      # setup-gradle caches dependencies, wrapper distributions, transformed
+      # Cache Gradle dependencies, wrapper distributions, transformed
       # Minecraft/NeoForge artifacts and Gradle's local build cache.
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -38,8 +38,7 @@ jobs:
             jdks
           cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork }}
 
-      # runClient downloads the vanilla asset index and hundreds of MiB of
-      # objects outside GRADLE_USER_HOME. Cache that separately from Gradle.
+      # The Minecraft asset index and objects live outside GRADLE_USER_HOME.
       - name: Cache Minecraft client assets
         uses: actions/cache@v4
         with:
@@ -61,8 +60,8 @@ jobs:
       - name: Test client-log checker
         run: python scripts/check_client_model_bake.py --self-test
 
-      # ModDevGradle's CI binary-patch path skips expensive Minecraft
-      # decompile/recompile work. The same Gradle daemon is reused by runClient.
+      # ModDevGradle's CI binary-patch path avoids expensive Minecraft
+      # decompile/recompile work. The Gradle daemon is reused by runClient.
       - name: Build mod
         run: ./gradlew build --console=plain -Pneogradle.subsystems.decompiler.enabled=false
 
@@ -103,5 +102,102 @@ jobs:
           smoke_log="$RUNNER_TEMP/client-smoke.log"
           rm -f "$log_file" "$smoke_log"
 
-          # Keep a hard upper bound, but stop only after resource reload and
-          # atlas creation have settled. No broad 
+          # Bound the launch, but stop only after resource reload and atlas
+          # creation settle. Unexpected Gradle exits must remain failures.
+          timeout --signal=TERM --kill-after=10s 240s \
+            xvfb-run -a -s "-screen 0 854x480x24 +extension GLX +render" \
+            ./gradlew runClient --console=plain \
+            > "$smoke_log" 2>&1 &
+          smoke_pid=$!
+
+          fail_smoke() {
+            echo "$1"
+            tail -n 160 "$smoke_log" || true
+            if [ -f "$log_file" ]; then tail -n 160 "$log_file"; fi
+            kill "$smoke_pid" 2>/dev/null || true
+            exit 1
+          }
+
+          deadline=$((SECONDS + 190))
+          reload_seen=0
+          while (( SECONDS < deadline )); do
+            if grep -q "Reloading ResourceManager" "$log_file" 2>/dev/null; then
+              reload_seen=1
+              break
+            fi
+
+            if grep -Eq "Failed to create backend|Vulkan is not supported|Couldn't find matching GLX visual" "$log_file" "$smoke_log" 2>/dev/null; then
+              fail_smoke "Minecraft graphics backend failed before resource reload."
+            fi
+
+            if ! kill -0 "$smoke_pid" 2>/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+
+          if [ "$reload_seen" -ne 1 ]; then
+            fail_smoke "Client exited or timed out before resource reload."
+          fi
+
+          # Require atlas creation and a quiet log window rather than relying
+          # on a fixed sleep that can race asynchronous model baking.
+          atlas_deadline=$((SECONDS + 60))
+          last_size=-1
+          stable_samples=0
+          while (( SECONDS < atlas_deadline )); do
+            if grep -q "minecraft/TextureAtlas.*Created:" "$log_file" 2>/dev/null; then
+              current_size="$(stat -c %s "$log_file")"
+              if [ "$current_size" = "$last_size" ]; then
+                stable_samples=$((stable_samples + 1))
+              else
+                stable_samples=0
+                last_size="$current_size"
+              fi
+              if (( stable_samples >= 4 )); then
+                break
+              fi
+            fi
+            sleep 2
+          done
+
+          if (( stable_samples < 4 )); then
+            fail_smoke "Resource reload did not reach a stable texture-atlas log state."
+          fi
+
+          # The only expected non-zero exit is SIGTERM after successful reload.
+          if ! pkill -TERM -f '[n]et.neoforged.devlaunch.Main'; then
+            fail_smoke "Could not find the NeoForge client process for controlled shutdown."
+          fi
+
+          set +e
+          wait "$smoke_pid"
+          client_status=$?
+          set -e
+          cat "$smoke_log"
+
+          if [ "$client_status" -ne 143 ]; then
+            echo "Expected controlled SIGTERM exit 143 after resource reload; got $client_status."
+            exit 1
+          fi
+
+          python scripts/check_client_model_bake.py "$log_file"
+
+      - name: Upload client logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: celestial-dominion-client-logs
+          path: |
+            run/logs/latest.log
+            ${{ runner.temp }}/client-smoke.log
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Upload mod JAR
+        uses: actions/upload-artifact@v4
+        with:
+          name: celestial-dominion-minecraft-26.3
+          path: build/libs/*.jar
+          if-no-files-found: error
+          retention-days: 30
