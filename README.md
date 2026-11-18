@@ -34,7 +34,7 @@ The jar is written to `build/libs/`. GitHub Actions installs Pillow, generates t
 - Abyssal tools and the Abyssal Omnitool are smithing upgrades from Netherite using the Abyssal Smithing Template and Abyssal Ingot.
 - Celestial tools are the final fusion: the matching Solar tool is the base, the matching Abyssal tool occupies the template slot, and the Celestial Catalyst is the addition.
 - Each Omnitool combines pickaxe, axe, shovel and hoe mining rules and supports log stripping, copper scraping/unwaxing, dirt pathing, campfire dousing and tilling. It is intentionally a single-block tool: no area mining or tick-driven particles.
-- Animated item textures use eight-frame 32x32 sheets and `.png.mcmeta`; Minecraft handles the animation client-side.
+- Animated item textures use eight-frame 64x64 sheets and `.png.mcmeta`; Minecraft handles the animation client-side.
 
 ## Build caveat
 The project includes data-driven world generation, loot tables and all 15 smithing transformations.
