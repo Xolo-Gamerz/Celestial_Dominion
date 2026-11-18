@@ -197,10 +197,10 @@ def draw_atlas(material, kind, frame):
 
 def make_template_model(item_id):
     return model_json(item_id, [
-        cube([2, 1, 7], [14, 15, 9], [34, 33, 62, 62], "plate"),
-        cube([3, 2, 6], [13, 14, 7], [34, 33, 62, 62]),
-        cube([5, 4, 5], [11, 12, 6], [34, 33, 62, 62]),
-        cube([6, 6, 4], [10, 10, 7], [34, 33, 62, 62]),
+        cube([2, 1, 7], [14, 15, 9], [0, 0, 32, 32], "plate"),
+        cube([3, 2, 6], [13, 14, 7], [0, 0, 32, 32]),
+        cube([5, 4, 5], [11, 12, 6], [0, 0, 32, 32]),
+        cube([6, 6, 4], [10, 10, 7], [0, 0, 32, 32]),
     ], False)
 
 
@@ -225,9 +225,9 @@ def main():
         # 3D, beveled ingots, templates and the final catalyst.
         (MODELS / f"{material}_ingot.json").write_text(json.dumps(model_json(
             f"{material}_ingot", [
-                cube([2, 5, 5], [14, 11, 11], [34, 33, 62, 62]),
-                cube([3, 6, 4], [13, 10, 12], [34, 33, 62, 62]),
-                cube([4, 7, 3], [12, 9, 13], [34, 33, 62, 62]),
+                cube([2, 5, 5], [14, 11, 11], [0, 0, 32, 32]),
+                cube([3, 6, 4], [13, 10, 12], [0, 0, 32, 32]),
+                cube([4, 7, 3], [12, 9, 13], [0, 0, 32, 32]),
             ], False), indent=2) + "\n", encoding="utf-8")
         template_id = f"{material}_smithing_template"
         if material != "celestial":
@@ -235,9 +235,9 @@ def main():
                 make_template_model(template_id), indent=2) + "\n", encoding="utf-8")
     (MODELS / "celestial_catalyst.json").write_text(json.dumps(model_json(
         "celestial_catalyst", [
-            cube([3, 2, 6], [13, 14, 10], [34, 33, 62, 62], "crystal"),
-            cube([5, 4, 5], [11, 12, 11], [34, 33, 62, 62]),
-            cube([7, 6, 4], [9, 10, 12], [34, 33, 62, 62]),
+            cube([3, 2, 6], [13, 14, 10], [0, 0, 32, 32], "crystal"),
+            cube([5, 4, 5], [11, 12, 11], [0, 0, 32, 32]),
+            cube([7, 6, 4], [9, 10, 12], [0, 0, 32, 32]),
         ], False), indent=2) + "\n", encoding="utf-8")
 
 
