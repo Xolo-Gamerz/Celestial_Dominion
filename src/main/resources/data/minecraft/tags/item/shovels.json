@@ -1,0 +1,8 @@
+{
+  "replace": false,
+  "values": [
+    "celestial_dominion:solar_shovel",
+    "celestial_dominion:abyssal_shovel",
+    "celestial_dominion:celestial_shovel"
+  ]
+}
