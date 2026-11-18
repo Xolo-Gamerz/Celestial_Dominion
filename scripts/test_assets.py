@@ -41,7 +41,7 @@ def main():
     for path in ROOT.rglob("*.json"):
         read_json(path)
 
-    # All relic item models must be genuine cuboid models, not generated sprites.
+    # Relic tools and swords deliberately use vanilla 2D item rendering.
     materials = ("solar", "abyssal", "celestial")
     kinds = ("pickaxe", "axe", "shovel", "hoe", "multitool", "sword")
     for material in materials:
@@ -54,49 +54,45 @@ def main():
             model = read_json(model_path) if model_path.exists() else None
             item = read_json(item_path) if item_path.exists() else None
             if model:
-                elements = model.get("elements", [])
-                if len(elements) < 6:
-                    fail(f"{name}: expected 3D cuboid geometry, found {len(elements)} elements")
                 if model.get("parent") != "minecraft:item/handheld":
-                    fail(f"{name}: handheld model parent missing")
-                for element in elements:
-                    for face in element.get("faces", {}).values():
-                        uv = face.get("uv", [])
-                        if len(uv) != 4 or min(uv) < 0 or max(uv) > 16:
-                            fail(f"{name}: cuboid UV coordinates must stay within Minecraft's 0..16 range: {uv}")
+                    fail(f"{name}: tool must use Minecraft's vanilla handheld item model")
+                if model.get("elements"):
+                    fail(f"{name}: custom cuboid geometry is forbidden; use the vanilla 2D sprite path")
             if item and item.get("model", {}).get("model") != f"celestial_dominion:item/{name}":
-                fail(f"{name}: client item does not point to its 3D model")
-            size = check_png(texture_path, (64, 64))
-            if size != (64, 64):
-                fail(f"{name}: cuboid item texture must be a square 64x64 image")
+                fail(f"{name}: client item does not point to its generated sprite model")
+            size = check_png(texture_path, (32, 32))
+            if size != (32, 32):
+                fail(f"{name}: pixel-art tool sprite must be 32x32")
             if meta_path.exists():
-                fail(f"{name}: cuboid item texture must not use the broken vertical animation strip")
+                fail(f"{name}: static item sprite must not have animation metadata")
+            try:
+                with Image.open(texture_path) as image:
+                    if image.convert("RGBA").getbbox() is None:
+                        fail(f"{name}: sprite is fully transparent")
+            except Exception:
+                pass
 
-    # Ingredients and smithing relics also use 3D cuboids rather than flat icons.
-    for name in ("solar_ingot", "abyssal_ingot", "celestial_ingot",
-                 "solar_smithing_template", "abyssal_smithing_template",
-                 "celestial_catalyst"):
+    # Ingots, smithing templates and catalyst are also flat vanilla item sprites.
+    ingredient_names = (
+        "solar_ingot", "abyssal_ingot", "celestial_ingot",
+        "solar_smithing_template", "abyssal_smithing_template",
+        "celestial_catalyst",
+    )
+    for name in ingredient_names:
         model_path = ASSETS / "models/item" / f"{name}.json"
         item_path = ASSETS / "items" / f"{name}.json"
         texture_path = ASSETS / "textures/item" / f"{name}.png"
-        meta_path = ASSETS / "textures/item" / f"{name}.png.mcmeta"
         model = read_json(model_path) if model_path.exists() else None
         item = read_json(item_path) if item_path.exists() else None
-        if not model or len(model.get("elements", [])) < 3:
-            fail(f"{name}: expected a 3D cuboid model")
-        if model:
-            for element in model.get("elements", []):
-                for face in element.get("faces", {}).values():
-                    uv = face.get("uv", [])
-                    if len(uv) != 4 or min(uv) < 0 or max(uv) > 16:
-                        fail(f"{name}: ingredient cuboid UVs must stay within 0..16: {uv}")
-        if model and model.get("parent") != "minecraft:item/handheld":
-            fail(f"{name}: flat generated parent would draw a sprite behind the cuboids")
+        if not model or model.get("parent") != "minecraft:item/generated":
+            fail(f"{name}: ingredient must use Minecraft's vanilla generated-item model")
+        if model and model.get("elements"):
+            fail(f"{name}: ingredient sprite must not contain custom cuboid geometry")
         if not item or item.get("model", {}).get("model") != f"celestial_dominion:item/{name}":
-            fail(f"{name}: client item does not point to its cuboid model")
+            fail(f"{name}: client item does not point to its generated sprite model")
         check_png(texture_path, (32, 32))
-        if meta_path.exists():
-            fail(f"{name}: static ingredient texture unexpectedly has animation metadata")
+        if texture_path.with_name(f"{name}.png.mcmeta").exists():
+            fail(f"{name}: static ingredient sprite unexpectedly has animation metadata")
 
     # Material textures and transparent ornamental overlays must match each
     # equipment layer's native UV dimensions.
@@ -251,8 +247,8 @@ def main():
         return 1
     print("ASSET VALIDATION PASSED")
     print(" - all JSON resources parse")
-    print(" - 18 animated relic models and 6 ingredient models contain 3D cuboid geometry")
-    print(" - all 18 square 64x64 relic textures and cuboid UVs are valid")
+    print(" - all 18 tools/weapons use vanilla handheld models and 32x32 pixel-art sprites")
+    print(" - all 6 ingredients use vanilla generated-item models and 32x32 sprites")
     print(" - 9 armor atlases, 9 transparent ornament overlays and 3 animated wing sheets have expected dimensions")
     print(" - all 15 tool smithing recipes exist")
     print(" - Solar/Abyssal/Celestial combat-role balance declarations are consistent")
