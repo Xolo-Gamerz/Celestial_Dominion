@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smithing_transform",
+  "template": "celestial_dominion:abyssal_smithing_template",
+  "base": "celestial_dominion:solar_hoe",
+  "addition": "celestial_dominion:celestial_catalyst",
+  "result": {
+    "id": "celestial_dominion:celestial_hoe"
+  }
+}
