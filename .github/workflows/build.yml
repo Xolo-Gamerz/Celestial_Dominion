@@ -29,7 +29,12 @@ jobs:
         uses: gradle/actions/setup-gradle@v6
         with:
           gradle-home-cache-includes: |
-            caches/neoformruntime/**
+            caches
+            notifications
+            jdks
+          # Same-repository PRs can refresh their own merge-ref cache; fork PRs
+          # stay read-only and cannot write cache entries.
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork }}
 
       - name: Install Pillow
         run: python -m pip install pillow
