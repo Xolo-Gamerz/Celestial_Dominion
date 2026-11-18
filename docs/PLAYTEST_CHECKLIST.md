@@ -27,6 +27,16 @@ The Python test suite validates resource JSON, model geometry, UV bounds, animat
 /give @p celestial_dominion:solar_shovel
 /give @p celestial_dominion:solar_hoe
 /give @p celestial_dominion:solar_multitool
+/give @p celestial_dominion:abyssal_pickaxe
+/give @p celestial_dominion:abyssal_axe
+/give @p celestial_dominion:abyssal_shovel
+/give @p celestial_dominion:abyssal_hoe
+/give @p celestial_dominion:abyssal_multitool
+/give @p celestial_dominion:celestial_pickaxe
+/give @p celestial_dominion:celestial_axe
+/give @p celestial_dominion:celestial_shovel
+/give @p celestial_dominion:celestial_hoe
+/give @p celestial_dominion:celestial_multitool
 ```
 
 4. Check first-person, third-person front/back, offhand, GUI and dropped-item views. The 3D models should have visible depth; they should not look like a flat icon. Check that the larger first-person transform does not clip against the screen.
