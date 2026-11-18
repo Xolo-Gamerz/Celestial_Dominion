@@ -260,6 +260,55 @@ def make_wings(material):
     return im
 
 
+def make_armor_overlay(material, layer):
+    """Transparent ornamental layer rendered over the base humanoid armor UV."""
+    p = PALETTES[material]
+    im = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    bright = (*p["shine"][:3], 230)
+    accent = (*p["accent"][:3], 220)
+    white = (*p["white"][:3], 245)
+
+    # Fine edge piping and articulated plate seams.
+    d.line((1, 1, 62, 1, 62, 30, 1, 30, 1, 1), fill=bright, width=1)
+    for x in (8, 16, 24, 32, 40, 48, 56):
+        d.line((x, 3, x, 28), fill=accent, width=1)
+        d.point((x, 3), fill=white)
+        d.point((x, 28), fill=white)
+    if layer == "humanoid_leggings":
+        d.line((3, 8, 61, 8), fill=bright, width=1)
+        d.line((3, 24, 61, 24), fill=accent, width=1)
+        for x in (8, 24, 40, 56):
+            d.polygon([(x, 10), (x+2, 13), (x, 16), (x-2, 13)], fill=accent)
+    else:
+        d.line((3, 7, 61, 7), fill=bright, width=1)
+        d.line((3, 25, 61, 25), fill=accent, width=1)
+        for x in (8, 24, 40, 56):
+            d.polygon([(x, 10), (x+3, 15), (x, 21), (x-3, 15)], fill=accent, outline=white)
+
+    # Signature crest: solar rays, an abyssal eye, or a celestial star map.
+    if material == "solar":
+        for cx in (12, 32, 52):
+            d.ellipse((cx-3, 12, cx+3, 18), outline=white, width=1)
+            d.line((cx, 8, cx, 22), fill=bright, width=1)
+            d.line((cx-6, 15, cx+6, 15), fill=bright, width=1)
+            d.line((cx-4, 11, cx+4, 19), fill=accent, width=1)
+            d.line((cx+4, 11, cx-4, 19), fill=accent, width=1)
+    elif material == "abyssal":
+        for cx in (12, 32, 52):
+            d.ellipse((cx-5, 12, cx+5, 18), outline=accent, width=1)
+            d.ellipse((cx-2, 13, cx+2, 17), fill=bright)
+            d.point((cx, 15), fill=white)
+            d.line((cx-6, 21, cx, 24, cx+6, 21), fill=accent, width=1)
+    else:
+        for cx, cy in ((12, 15), (32, 15), (52, 15)):
+            d.polygon([(cx, cy-6), (cx+2, cy-2), (cx+6, cy),
+                       (cx+2, cy+2), (cx, cy+6), (cx-2, cy+2),
+                       (cx-6, cy), (cx-2, cy-2)], fill=accent, outline=white)
+            d.line((cx-8, cy-8, cx+8, cy+8), fill=bright, width=1)
+    return im
+
+
 def make_armor_atlas(material, layer):
     p = PALETTES[material]
     im = Image.new("RGBA", (64, 32), p["shadow"])
@@ -340,6 +389,14 @@ def main():
                 baby.paste(atlas, (0, 32))
                 atlas = baby
             atlas.save(out)
+            overlay = make_armor_overlay(material, layer)
+            if layer == "humanoid_baby":
+                baby_overlay = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+                baby_overlay.paste(overlay, (0, 0))
+                baby_overlay.paste(overlay, (0, 32))
+                overlay = baby_overlay
+            overlay_path = ROOT / "textures/entity/equipment" / layer / f"{material}_ornament.png"
+            overlay.save(overlay_path)
     make_catalyst().save(ROOT / "textures/item" / "celestial_catalyst.png")
 
 
