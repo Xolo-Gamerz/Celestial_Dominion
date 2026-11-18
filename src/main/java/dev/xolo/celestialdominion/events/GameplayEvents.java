@@ -13,6 +13,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingKnockBackEvent;
@@ -169,16 +170,18 @@ public final class GameplayEvents {
         var main = player.getMainHandItem();
         var off = player.getOffhandItem();
 
-        emitRelicAura(level, player, main, 0.0, 0.0);
-        emitRelicAura(level, player, off, 0.12, 0.08);
+        emitRelicAura(level, player, main, 0.28);
+        emitRelicAura(level, player, off, -0.28);
     }
 
     private static void emitRelicAura(ServerLevel level, ServerPlayer player,
                                       net.minecraft.world.item.ItemStack stack,
-                                      double xOffset, double zOffset) {
-        double x = player.getX() + xOffset;
-        double y = player.getY() + 1.0;
-        double z = player.getZ() + zOffset;
+                                      double handSideOffset) {
+        Vec3 look = player.getLookAngle();
+        Vec3 right = new Vec3(-look.z, 0.0, look.x).normalize();
+        double x = player.getX() + look.x * 0.30 + right.x * handSideOffset;
+        double y = player.getY() + 1.15;
+        double z = player.getZ() + look.z * 0.30 + right.z * handSideOffset;
 
         if (isSolarRelic(stack)) {
             level.sendParticles(ParticleTypes.FLAME, x, y, z, 2, 0.10, 0.12, 0.10, 0.002);
