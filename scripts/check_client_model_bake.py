@@ -31,7 +31,7 @@ def inspect_log(text):
     missing = []
     if RELOAD_MARKER not in text:
         missing.append("client never began a resource reload")
-    if ATLAS_MARKER not in text or "Created:" not in text:
+    if not re.search(r"minecraft/TextureAtlas.*Created:", text):
         missing.append("client never logged texture-atlas creation after resource reload")
     return found, missing
 
@@ -86,7 +86,7 @@ def main():
     print("CLIENT RESOURCE SMOKE TEST PASSED")
     print(" - NeoForge client began resource reload")
     print(" - texture atlas creation was logged")
-    print(" - no model bake, cuboid UV/translucency, missing texture or model-loading errors found")
+    print(" - no model bake, missing texture, missing model or resource-loading errors found")
     return 0
 
 
