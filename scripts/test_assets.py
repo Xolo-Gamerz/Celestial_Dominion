@@ -78,6 +78,8 @@ def main():
                  "celestial_catalyst"):
         model_path = ASSETS / "models/item" / f"{name}.json"
         item_path = ASSETS / "items" / f"{name}.json"
+        texture_path = ASSETS / "textures/item" / f"{name}.png"
+        meta_path = ASSETS / "textures/item" / f"{name}.png.mcmeta"
         model = read_json(model_path) if model_path.exists() else None
         item = read_json(item_path) if item_path.exists() else None
         if not model or len(model.get("elements", [])) < 3:
@@ -92,6 +94,9 @@ def main():
             fail(f"{name}: flat generated parent would draw a sprite behind the cuboids")
         if not item or item.get("model", {}).get("model") != f"celestial_dominion:item/{name}":
             fail(f"{name}: client item does not point to its cuboid model")
+        check_png(texture_path, (32, 32))
+        if meta_path.exists():
+            fail(f"{name}: static ingredient texture unexpectedly has animation metadata")
 
     # Material textures and transparent ornamental overlays must match each
     # equipment layer's native UV dimensions.
