@@ -133,15 +133,21 @@ def main():
                 fail(f"{material}: armor stats declaration not found")
                 return (0, 0, 0)
             values = [float(value) for value in match.groups()]
-            return (sum(values[1:5]), values[5], values[6])
+            return (sum(values[1:5]), values[5], values[6], values[0])
 
         solar_armor = armor_stats("solar")
         abyssal_armor = armor_stats("abyssal")
         celestial_armor = armor_stats("celestial")
-        if not (abyssal_armor[0] > solar_armor[0] and abyssal_armor[1] > solar_armor[1]):
-            fail("Abyssal armor must be more defensive/tough than Solar armor")
-        if not (celestial_armor[0] > abyssal_armor[0] and celestial_armor[1] > abyssal_armor[1]):
-            fail("Celestial armor must exceed Abyssal defense and toughness")
+        if not (abyssal_armor[0] > solar_armor[0]
+                and abyssal_armor[1] > solar_armor[1]
+                and abyssal_armor[2] > solar_armor[2]):
+            fail("Abyssal armor must exceed Solar defense, toughness and knockback resistance")
+        if not (celestial_armor[0] > abyssal_armor[0]
+                and celestial_armor[1] > abyssal_armor[1]
+                and celestial_armor[2] >= abyssal_armor[2]):
+            fail("Celestial armor must exceed Abyssal defense/toughness and retain its resistance")
+        if not (abyssal_armor[3] > solar_armor[3] and celestial_armor[3] > abyssal_armor[3]):
+            fail("Armor durability must progress Solar < Abyssal < Celestial")
 
         def material_bonus(name):
             match = re.search(
@@ -153,6 +159,15 @@ def main():
                 return 0.0
             return float(match.group(1))
 
+        def material_speed(name):
+            match = re.search(
+                rf'ToolMaterial {name} = new ToolMaterial\(\s*[^,]+,\s*\d+,\s*([\d.]+)F',
+                source,
+            )
+            if not match:
+                fail(f"{name}: mining speed declaration not found")
+                return 0.0
+            return float(match.group(1))
         def sword_damage(name, material):
             match = re.search(
                 rf'p\.sword\({material},\s*([\d.]+)F,\s*-[\d.]+F\)',
@@ -174,6 +189,11 @@ def main():
         celestial_mining = material_bonus("CELESTIAL_MINING_TOOL")
         if not (solar_mining > abyssal_mining and celestial_mining > solar_mining):
             fail("Mining-tool damage bonus must follow Solar offence > Abyssal and Celestial fusion")
+        solar_speed = material_speed("SOLAR_MINING_TOOL")
+        abyssal_speed = material_speed("ABYSSAL_MINING_TOOL")
+        celestial_speed = material_speed("CELESTIAL_MINING_TOOL")
+        if not (abyssal_speed > solar_speed and celestial_speed > abyssal_speed):
+            fail("Mining speed must progress Solar < Abyssal < Celestial")
 
     if ERRORS:
         print(f"ASSET VALIDATION FAILED ({len(ERRORS)} issue(s))")
