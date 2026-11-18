@@ -215,6 +215,25 @@ def main():
         if harvest_tag("CELESTIAL_MINING_TOOL") != "INCORRECT_FOR_CELESTIAL_TOOL":
             fail("Celestial tools must use the custom final harvest tier")
 
+    # Particle bursts are deliberately capped to avoid the old 300+ particle
+    # ability spikes. This is a static guard; client FPS still needs a playtest.
+    ability_java = ROOT.parent / "java/dev/xolo/celestialdominion/item/AbilitySwordItem.java"
+    gameplay_java = ROOT.parent / "java/dev/xolo/celestialdominion/events/GameplayEvents.java"
+    for java_path in (ability_java, gameplay_java):
+        if not java_path.exists():
+            fail(f"missing particle implementation source: {java_path.name}")
+            continue
+        particle_source = java_path.read_text(encoding="utf-8")
+        counts = [int(value) for value in re.findall(
+            r'sendParticles\(\s*ParticleTypes\.\w+,.*?\n\s*(\d+),',
+            particle_source,
+            re.DOTALL,
+        )]
+        if not counts:
+            fail(f"{java_path.name}: no particle calls found for performance validation")
+        elif max(counts) > 100:
+            fail(f"{java_path.name}: particle burst exceeds 100 particles ({max(counts)})")
+
     if ERRORS:
         print(f"ASSET VALIDATION FAILED ({len(ERRORS)} issue(s))")
         for error in ERRORS:
@@ -227,6 +246,7 @@ def main():
     print(" - 9 armor atlases, 9 transparent ornament overlays and 3 animated wing sheets have expected dimensions")
     print(" - all 15 tool smithing recipes exist")
     print(" - Solar/Abyssal/Celestial combat-role balance declarations are consistent")
+    print(" - particle bursts stay below the 100-particle static cap")
     return 0
 
 
