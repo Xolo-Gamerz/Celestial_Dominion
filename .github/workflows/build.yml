@@ -11,7 +11,8 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # Pin the runner image so Mesa/Xvfb behavior does not drift with ubuntu-latest.
+    runs-on: ubuntu-24.04
     timeout-minutes: 8
     steps:
       - name: Checkout
