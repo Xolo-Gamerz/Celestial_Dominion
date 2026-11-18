@@ -163,6 +163,16 @@ def main():
                 return 0.0
             return float(match.group(1))
 
+        def harvest_tag(name):
+            match = re.search(
+                rf'ToolMaterial {name} = new ToolMaterial\(\s*([^,]+)',
+                source,
+            )
+            if not match:
+                fail(f"{name}: harvest-tier declaration not found")
+                return ""
+            return match.group(1).strip()
+
         def material_speed(name):
             match = re.search(
                 rf'ToolMaterial {name} = new ToolMaterial\(\s*[^,]+,\s*\d+,\s*([\d.]+)F',
@@ -198,6 +208,12 @@ def main():
         celestial_speed = material_speed("CELESTIAL_MINING_TOOL")
         if not (abyssal_speed > solar_speed and celestial_speed > abyssal_speed):
             fail("Mining speed must progress Solar < Abyssal < Celestial")
+        if harvest_tag("SOLAR_MINING_TOOL") != "BlockTags.INCORRECT_FOR_NETHERITE_TOOL":
+            fail("Solar tools must retain at least Netherite harvest capability")
+        if harvest_tag("ABYSSAL_MINING_TOOL") != "BlockTags.INCORRECT_FOR_NETHERITE_TOOL":
+            fail("Abyssal tools must retain Netherite harvest capability")
+        if harvest_tag("CELESTIAL_MINING_TOOL") != "INCORRECT_FOR_CELESTIAL_TOOL":
+            fail("Celestial tools must use the custom final harvest tier")
 
     if ERRORS:
         print(f"ASSET VALIDATION FAILED ({len(ERRORS)} issue(s))")
