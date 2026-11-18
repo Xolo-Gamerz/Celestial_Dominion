@@ -60,24 +60,24 @@ public final class ModItems {
                 toughness, knockbackResistance, REPAIR_TAG, asset(assetName));
     }
 
-    private static final ArmorMaterial SOLAR_ARMOR = armor("solar", 160, 8, 14, 11, 8, 8.0F, 0.35F);
-    private static final ArmorMaterial ABYSSAL_ARMOR = armor("abyssal", 220, 10, 18, 14, 10, 14.0F, 0.65F);
-    private static final ArmorMaterial CELESTIAL_ARMOR = armor("celestial", 320, 14, 24, 18, 14, 22.0F, 1.0F);
+    private static final ArmorMaterial SOLAR_ARMOR = armor("solar", 220, 9, 15, 11, 8, 7.0F, 0.30F);
+    private static final ArmorMaterial ABYSSAL_ARMOR = armor("abyssal", 280, 13, 21, 16, 12, 15.0F, 0.80F);
+    private static final ArmorMaterial CELESTIAL_ARMOR = armor("celestial", 360, 16, 26, 20, 16, 22.0F, 1.0F);
 
     private static final ToolMaterial SOLAR_TOOL = new ToolMaterial(
-            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 12000, 16.0F, 12.0F, 30, REPAIR_TAG);
+            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 12000, 16.0F, 8.0F, 30, REPAIR_TAG);
     private static final ToolMaterial ABYSSAL_TOOL = new ToolMaterial(
-            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 18000, 18.0F, 18.0F, 30, REPAIR_TAG);
+            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 18000, 18.0F, 2.0F, 30, REPAIR_TAG);
     private static final ToolMaterial CELESTIAL_TOOL = new ToolMaterial(
-            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 30000, 22.0F, 24.0F, 40, REPAIR_TAG);
+            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 30000, 22.0F, 12.0F, 40, REPAIR_TAG);
 
     // Mining tools share each tier's speed, durability and repair material, but not sword-level damage.
     private static final ToolMaterial SOLAR_MINING_TOOL = new ToolMaterial(
-            BlockTags.INCORRECT_FOR_DIAMOND_TOOL, 12000, 16.0F, 3.0F, 30, REPAIR_TAG);
+            BlockTags.INCORRECT_FOR_DIAMOND_TOOL, 12000, 16.0F, 4.0F, 30, REPAIR_TAG);
     private static final ToolMaterial ABYSSAL_MINING_TOOL = new ToolMaterial(
             BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 18000, 18.0F, 5.0F, 30, REPAIR_TAG);
     private static final ToolMaterial CELESTIAL_MINING_TOOL = new ToolMaterial(
-            INCORRECT_FOR_CELESTIAL_TOOL, 30000, 22.0F, 8.0F, 40, REPAIR_TAG);
+            INCORRECT_FOR_CELESTIAL_TOOL, 30000, 22.0F, 6.0F, 40, REPAIR_TAG);
 
     public static final DeferredItem<Item> SOLAR_ORE_ITEM = ITEMS.registerItem(
             "solar_ore", properties -> new BlockItem(ModBlocks.SOLAR_ORE.get(), properties));
@@ -107,11 +107,11 @@ public final class ModItems {
     public static final DeferredItem<Item> CELESTIAL_BOOTS = armorItem("celestial_boots", CELESTIAL_ARMOR, ArmorType.BOOTS);
 
     public static final DeferredItem<Item> SOLAR_SWORD = ITEMS.registerItem("solar_sword",
-            p -> new AbilitySwordItem(p.sword(SOLAR_TOOL, 24.0F, -1.2F), AbilitySwordItem.Mode.SOLAR));
+            p -> new AbilitySwordItem(p.sword(SOLAR_TOOL, 12.0F, -1.4F), AbilitySwordItem.Mode.SOLAR));
     public static final DeferredItem<Item> ABYSSAL_SWORD = ITEMS.registerItem("abyssal_sword",
-            p -> new AbilitySwordItem(p.sword(ABYSSAL_TOOL, 19.0F, -1.5F), AbilitySwordItem.Mode.ABYSSAL));
+            p -> new AbilitySwordItem(p.sword(ABYSSAL_TOOL, 8.0F, -2.2F), AbilitySwordItem.Mode.ABYSSAL));
     public static final DeferredItem<Item> CELESTIAL_SWORD = ITEMS.registerItem("celestial_sword",
-            p -> new AbilitySwordItem(p.sword(CELESTIAL_TOOL, 34.0F, -0.8F), AbilitySwordItem.Mode.CELESTIAL));
+            p -> new AbilitySwordItem(p.sword(CELESTIAL_TOOL, 16.0F, -1.4F), AbilitySwordItem.Mode.CELESTIAL));
 
     // Dedicated tools retain vanilla mining rules, enchantment compatibility and block interactions.
     public static final DeferredItem<Item> SOLAR_PICKAXE = ITEMS.registerItem("solar_pickaxe", p -> new Item(p.pickaxe(SOLAR_MINING_TOOL, 1.0F, -2.8F).fireResistant()));
