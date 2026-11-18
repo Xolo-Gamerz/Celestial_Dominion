@@ -27,8 +27,18 @@ KINDS = ("pickaxe", "axe", "shovel", "hoe", "multitool", "sword")
 
 
 def face(uv):
-    return {side: {"uv": uv, "texture": "#layer0"} for side in
-            ("north", "south", "east", "west", "up", "down")}
+    u0, v0, u1, v1 = uv
+    # Front/back get the full artwork. Side, top and bottom faces sample
+    # narrow bevel strips from the atlas edges instead of stretching the
+    # complete front design around every side of each cuboid.
+    return {
+        "north": {"uv": [u0, v0, u1, v1], "texture": "#layer0"},
+        "south": {"uv": [u0, v0, u1, v1], "texture": "#layer0"},
+        "east": {"uv": [max(u0, u1-4), v0, u1, v1], "texture": "#layer0"},
+        "west": {"uv": [u0, v0, min(u1, u0+4), v1], "texture": "#layer0"},
+        "up": {"uv": [u0, v0, u1, min(v1, v0+4)], "texture": "#layer0"},
+        "down": {"uv": [u0, max(v0, v1-4), u1, v1], "texture": "#layer0"},
+    }
 
 
 def cube(a, b, uv, name=None):
