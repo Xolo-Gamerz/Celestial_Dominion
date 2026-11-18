@@ -106,7 +106,11 @@ def main():
 
         if layers.get("wings") != [{"texture": f"celestial_dominion:{material}"}]:
             fail(f"{material}: missing material-specific WingsLayer texture")
-        check_png(ASSETS / "textures/entity/equipment/wings" / f"{material}.png", (64, 32))
+        wing_path = ASSETS / "textures/entity/equipment/wings" / f"{material}.png"
+        check_png(wing_path, (64, 256))
+        wing_meta = read_json(wing_path.with_name(f"{material}.png.mcmeta"))
+        if not wing_meta or wing_meta.get("animation", {}).get("width") != 64 or wing_meta.get("animation", {}).get("height") != 32:
+            fail(f"{material}: wing animation metadata must declare 64x32 frames")
 
     # Smithing progression is required for every tool type and tier.
     recipes = ROOT / "data/celestial_dominion/recipe"
@@ -204,7 +208,7 @@ def main():
     print(" - all JSON resources parse")
     print(" - 18 animated relic models and 6 ingredient models contain 3D cuboid geometry")
     print(" - all 18 animated texture sheets and metadata are valid")
-    print(" - 9 armor atlases, 9 transparent ornament overlays and 3 wing textures have expected dimensions")
+    print(" - 9 armor atlases, 9 transparent ornament overlays and 3 animated wing sheets have expected dimensions")
     print(" - all 15 tool smithing recipes exist")
     print(" - Solar/Abyssal/Celestial combat-role balance declarations are consistent")
     return 0
