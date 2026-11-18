@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: build-\${{ github.workflow }}-\${{ github.ref }}
+  group: build-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
             caches
             notifications
             jdks
-          cache-read-only: \${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork }}
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork }}
 
       # runClient downloads the vanilla asset index and hundreds of MiB of
       # objects outside GRADLE_USER_HOME. Cache that separately from Gradle.
@@ -44,7 +44,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: run/assets
-          key: minecraft-assets-\${{ runner.os }}-\${{ hashFiles('gradle.properties') }}
+          key: minecraft-assets-${{ runner.os }}-${{ hashFiles('gradle.properties') }}
 
       - name: Install Pillow
         run: python -m pip install --disable-pip-version-check pillow
