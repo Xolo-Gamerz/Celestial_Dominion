@@ -40,7 +40,7 @@ The Python test suite validates resource JSON, model geometry, UV bounds, animat
 ```
 
 4. Check first-person, third-person front/back, offhand, GUI and dropped-item views. The 3D models should have visible depth; they should not look like a flat icon. Check that the larger first-person transform does not clip against the screen.
-5. Hold each tier for at least 10 seconds. Solar should flicker like embers, Abyssal should pulse like a rift, and Celestial should shimmer with moving star glints. Check both main hand and offhand aura particles.
+5. Hold each tier for at least 10 seconds. Check the distinct Solar ember, Abyssal rift and Celestial star-map artwork, plus the material-colored aura particles in both main hand and offhand. Armor wings use native texture animation; held cuboid textures are intentionally static to avoid the 26.3 transparency-bake bug.
 6. Equip each full armor set. Check the base texture and ornamental overlay, then inspect the material-specific animated wings from behind and from the side. Also check a normal and slim player skin.
 7. Test baby humanoid armor rendering separately; the baby atlas is a separate resource path and should not break adult armor.
 
