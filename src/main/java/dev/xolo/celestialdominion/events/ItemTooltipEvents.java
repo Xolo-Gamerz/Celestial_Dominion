@@ -60,7 +60,35 @@ public final class ItemTooltipEvents {
             line(event, "tooltip.celestial_dominion.celestial_sword.lore", ChatFormatting.LIGHT_PURPLE);
             line(event, "tooltip.celestial_dominion.celestial_sword.ability", ChatFormatting.GOLD);
             line(event, "tooltip.celestial_dominion.sword.cooldown_25", ChatFormatting.GRAY);
+        } else if (isSolarTool(stack)) {
+            line(event, "tooltip.celestial_dominion.solar_tools", ChatFormatting.GOLD);
+            if (stack.is(ModItems.SOLAR_MULTITOOL.get())) line(event, "tooltip.celestial_dominion.multitool", ChatFormatting.YELLOW);
+        } else if (isAbyssalTool(stack)) {
+            line(event, "tooltip.celestial_dominion.abyssal_tools", ChatFormatting.DARK_AQUA);
+            if (stack.is(ModItems.ABYSSAL_MULTITOOL.get())) line(event, "tooltip.celestial_dominion.multitool", ChatFormatting.AQUA);
+        } else if (isCelestialTool(stack)) {
+            line(event, "tooltip.celestial_dominion.celestial_tools", ChatFormatting.LIGHT_PURPLE);
+            if (stack.is(ModItems.CELESTIAL_MULTITOOL.get())) line(event, "tooltip.celestial_dominion.multitool", ChatFormatting.GOLD);
+
         }
+    }
+
+    private static boolean isSolarTool(ItemStack stack) {
+        return stack.is(ModItems.SOLAR_PICKAXE.get()) || stack.is(ModItems.SOLAR_AXE.get())
+                || stack.is(ModItems.SOLAR_SHOVEL.get()) || stack.is(ModItems.SOLAR_HOE.get())
+                || stack.is(ModItems.SOLAR_MULTITOOL.get());
+    }
+
+    private static boolean isAbyssalTool(ItemStack stack) {
+        return stack.is(ModItems.ABYSSAL_PICKAXE.get()) || stack.is(ModItems.ABYSSAL_AXE.get())
+                || stack.is(ModItems.ABYSSAL_SHOVEL.get()) || stack.is(ModItems.ABYSSAL_HOE.get())
+                || stack.is(ModItems.ABYSSAL_MULTITOOL.get());
+    }
+
+    private static boolean isCelestialTool(ItemStack stack) {
+        return stack.is(ModItems.CELESTIAL_PICKAXE.get()) || stack.is(ModItems.CELESTIAL_AXE.get())
+                || stack.is(ModItems.CELESTIAL_SHOVEL.get()) || stack.is(ModItems.CELESTIAL_HOE.get())
+                || stack.is(ModItems.CELESTIAL_MULTITOOL.get());
     }
 
     private static boolean isSolarArmor(ItemStack stack) {

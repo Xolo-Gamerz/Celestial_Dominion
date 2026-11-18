@@ -28,6 +28,9 @@ jobs:
       - name: Generate item icons and armor atlases
         run: python scripts/generate_textures.py
 
+      - name: Generate animated tool textures
+        run: python scripts/generate_tool_textures.py
+
       - name: Build mod
         run: ./gradlew build
 
