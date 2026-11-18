@@ -22,7 +22,7 @@ The jar is written to `build/libs/`. GitHub Actions installs Pillow, generates t
 - Celestial: combines both paths, with the strongest armor and the combined sword abilities.
 - Solar dash/shockwave and Abyssal pull/freeze/heal abilities; Celestial sword combines both.
 - Full-set buffs and flight for the fusion armor.
-- Three custom ore blocks, ingots, smithing-template/catalyst items, distinct generated tool silhouettes and native animated tool textures.
+- Three custom ore blocks, ingots, smithing-template/catalyst items, distinct generated tool silhouettes and material-themed visual effects.
 
 ## World generation and progression
 - Solar Ore: ultra-rare veins in Overworld deepslate near bedrock (Y -63 to -48).
@@ -37,19 +37,19 @@ The jar is written to `build/libs/`. GitHub Actions installs Pillow, generates t
 - Abyssal tools and the Abyssal Omnitool are smithing upgrades from Netherite using the Abyssal Smithing Template and Abyssal Ingot.
 - Celestial tools are the final fusion: the matching Solar tool is the base, the matching Abyssal tool occupies the template slot, and the Celestial Catalyst is the addition.
 - Each Omnitool combines pickaxe, axe, shovel and hoe mining rules and supports log stripping, copper scraping/unwaxing, dirt pathing, campfire dousing and tilling. It is intentionally a single-block tool: no area mining or tick-driven particles.
-- Tools and swords use native cuboid 3D item geometry, enlarged first-/third-person transforms, and eight-frame 64x64 animated material atlases. Minecraft advances the textures natively.
+- Tools and swords use native cuboid 3D item geometry, enlarged first-/third-person transforms, and square 64x64 cuboid textures with UVs normalized to Minecraft's 0..16 face-coordinate space. Animated vertical item sheets were removed because Minecraft 26.3's cuboid transparency bake can address outside the image; material motion is supplied by the low-frequency held-item aura and animated armor wings.
 - Held relics emit at most two tiny material particles per hand every five ticks on the server; no per-frame Java renderer or shader is used.
 - Each armor set now uses a base plate texture plus a transparent ornamental overlay, with distinct Solar sun-forging, Abyssal rift and Celestial star-map motifs. Each set also includes material-themed animated 3D wings through Minecraft's built-in `WINGS` equipment layer. Ore blocks remain full 3D block models; ingots, templates and the catalyst have dedicated cuboid item models.
 
 ## Automated asset tests
 `docs/PLAYTEST_CHECKLIST.md` contains repeatable in-game checks for held models, animated wings, combat roles, tools, and ore generation.
 
-`python scripts/test_assets.py` parses every resource JSON, checks all 18 3D relic models and animation sheets, verifies base/overlay armor atlas dimensions, and confirms all 15 tool smithing recipes exist. GitHub Actions runs these checks before Gradle.
+`python scripts/test_assets.py` parses every resource JSON, checks all 24 cuboid models, validates face UVs against Minecraft's 0..16 model-space range and checks the real texture dimensions, verifies armor/wing atlas dimensions, and confirms all 15 tool smithing recipes exist. After compiling, GitHub Actions launches the NeoForge client under Xvfb and fails if the resource reload log contains item-model bake, cuboid-translucency, or model-loading errors.
 
 ## Build caveat
-The project includes data-driven world generation, loot tables and all 15 smithing transformations. CI compilation does not replace an in-game rendering and combat playtest.
+The project includes data-driven world generation, loot tables and all 15 smithing transformations. CI now performs a headless client resource-reload smoke test in addition to compilation. This catches model-bake errors that a Java compile and JSON parser cannot see, but it does not replace a human visual/combat playtest.
 - Solar full set retaliates by igniting attackers.
 - Abyssal and Celestial full sets slow/freeze nearby living entities.
 - Abyssal and Celestial full sets cancel player knockback.
 - Celestial flight is enabled without forcing the player to remain airborne.
-- Armor durability comes from the large ArmorMaterial durability multipliers rather than a small fixed override. GitHub Actions runs the Java 25 / NeoForge 26.3 build and asset regression checks. A successful CI build still needs to be followed by an in-game client playtest for model transforms, armor wings, animations and combat feel.
+- Armor durability comes from the large ArmorMaterial durability multipliers rather than a small fixed override. GitHub Actions runs the Java 25 / NeoForge 26.3 build and asset regression checks. A successful CI build still needs to be followed by an in-game client playtest for model transforms, armor wings and combat feel.
