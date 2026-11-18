@@ -92,6 +92,15 @@ def main():
         for layer in ("humanoid", "humanoid_leggings", "humanoid_baby"):
             check_png(ASSETS / "textures/entity/equipment" / layer / f"{material}.png", (64, 32) if layer != "humanoid_baby" else (64, 64))
 
+    # All three equipment assets expose the built-in 3D elytra wings layer.
+    for material in materials:
+        equipment = read_json(ASSETS / "equipment" / f"{material}.json")
+        if not equipment or equipment.get("layers", {}).get("wings") != [
+            {"texture": f"celestial_dominion:{material}"}
+        ]:
+            fail(f"{material}: missing material-specific WingsLayer texture")
+        check_png(ASSETS / "textures/entity/equipment/wings" / f"{material}.png", (64, 32))
+
     # Smithing progression is required for every tool type and tier.
     recipes = ROOT / "data/celestial_dominion/recipe"
     for material in materials:
@@ -110,7 +119,7 @@ def main():
     print(" - all JSON resources parse")
     print(" - 18 animated relic models and 6 ingredient models contain 3D cuboid geometry")
     print(" - all 18 animated texture sheets and metadata are valid")
-    print(" - 9 armor atlas files have expected dimensions")
+    print(" - 9 armor atlases and 3 wing textures have expected dimensions")
     print(" - all 15 tool smithing recipes exist")
     return 0
 
