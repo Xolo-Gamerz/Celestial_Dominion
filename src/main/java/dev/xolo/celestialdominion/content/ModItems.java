@@ -140,7 +140,7 @@ public final class ModItems {
                                                         float damage, float speed) {
         return properties.pickaxe(material, damage, speed)
                 .delayedComponent(DataComponents.TOOL, context -> {
-                    var blocks = context.lookup(Registries.BLOCK);
+                    var blocks = context.lookupOrThrow(Registries.BLOCK);
                     return new Tool(List.of(
                             Tool.Rule.deniesDrops(blocks.getOrThrow(material.incorrectBlocksForDrops())),
                             Tool.Rule.minesAndDrops(blocks.getOrThrow(BlockTags.MINEABLE_WITH_PICKAXE), material.speed()),
