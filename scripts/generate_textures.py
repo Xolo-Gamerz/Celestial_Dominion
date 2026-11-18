@@ -218,7 +218,7 @@ def make_ore_block(material):
     return im
 
 
-def make_wings(material):
+def make_wings(material, frame=0):
     """64x32 texture for the built-in humanoid WingsLayer (elytra geometry)."""
     p = PALETTES[material]
     im = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
@@ -245,18 +245,21 @@ def make_wings(material):
     d.rectangle((30, 4, 33, 10), fill=white)
     # Material signature.
     if material == "solar":
+        shift = frame % 4
         for x in (7, 14, 21, 43, 50, 57):
-            d.line((x, 18, x+2, 13), fill=shine, width=2)
-            d.point((x+2, 12), fill=white)
+            d.line((x, 18-shift, x+2, 13-shift), fill=shine, width=2)
+            d.point((x+2, 12-shift), fill=white)
     elif material == "abyssal":
+        pulse = frame % 3
         for x in (8, 17, 24, 40, 47, 56):
-            d.ellipse((x-1, 15, x+2, 18), fill=accent, outline=white)
-        d.line((8, 25, 20, 20, 28, 15), fill=white, width=1)
-        d.line((56, 25, 44, 20, 36, 15), fill=white, width=1)
+            d.ellipse((x-1-pulse, 15-pulse, x+2+pulse, 18+pulse), fill=accent, outline=white)
+        d.line((8, 25, 20, 20-pulse, 28, 15), fill=white, width=1)
+        d.line((56, 25, 44, 20-pulse, 36, 15), fill=white, width=1)
     else:
-        for x, y in ((8, 17), (18, 12), (24, 19), (56, 17), (46, 12), (40, 19)):
-            d.line((x-2, y, x+2, y), fill=white, width=1)
-            d.line((x, y-2, x, y+2), fill=accent, width=1)
+        for i, (x, y) in enumerate(((8, 17), (18, 12), (24, 19), (56, 17), (46, 12), (40, 19))):
+            shift = (frame + i) % 3 - 1
+            d.line((x-2, y+shift, x+2, y+shift), fill=white, width=1)
+            d.line((x, y-2+shift, x, y+2+shift), fill=accent, width=1)
     return im
 
 
@@ -375,7 +378,14 @@ def main():
         make_ore_block(material).save(ROOT / "textures/block" / f"{material}_ore.png")
         wings = ROOT / "textures/entity/equipment/wings" / f"{material}.png"
         wings.parent.mkdir(parents=True, exist_ok=True)
-        make_wings(material).save(wings)
+        wing_sheet = Image.new("RGBA", (64, 32 * 8), (0, 0, 0, 0))
+        for frame in range(8):
+            wing_sheet.paste(make_wings(material, frame), (0, frame * 32))
+        wing_sheet.save(wings)
+        (wings.parent / f"{material}.png.mcmeta").write_text(
+            json.dumps({"animation": {"width": 64, "height": 32, "frametime": 4}}, indent=2) + "\n",
+            encoding="utf-8",
+        )
         for layer in ("humanoid", "humanoid_leggings", "humanoid_baby"):
             out = ROOT / "textures/entity/equipment" / layer / f"{material}.png"
             out.parent.mkdir(parents=True, exist_ok=True)
