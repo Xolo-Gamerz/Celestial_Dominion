@@ -130,8 +130,11 @@ jobs:
               break
             fi
 
-            if grep -Eq "Failed to create backend|Vulkan is not supported|Couldn't find matching GLX visual" "$log_file" "$smoke_log" 2>/dev/null; then
-              fail_smoke "Minecraft graphics backend failed before resource reload."
+            # Minecraft 26.3 may probe OpenGL first, log a GLX failure,
+            # then successfully fall back to Vulkan. That OpenGL diagnostic is
+            # expected on this Xvfb runner; only fail if Vulkan itself fails.
+            if grep -Eiq "Vulkan is not supported|Failed to create backend Vulkan|Failed to create Vulkan (instance|device)|No Vulkan devices" "$log_file" "$smoke_log" 2>/dev/null; then
+              fail_smoke "Minecraft Vulkan graphics backend failed."
             fi
 
             if ! kill -0 "$smoke_pid" 2>/dev/null; then
