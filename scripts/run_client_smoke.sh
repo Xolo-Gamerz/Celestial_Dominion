@@ -53,42 +53,29 @@ done
 (( stable_samples >= 3 )) || fail "Texture-atlas creation did not complete (last observed count: $last_atlas_count)."
 grep -Eq "Using graphics backend Vulkan," "$LOG" || fail "Minecraft did not initialize the Vulkan graphics backend."
 
-# Select the largest visible top-level X11 window instead of relying on
-# title/class metadata. Minecraft's SDL/LWJGL title varies across versions.
-window_id=""
-largest_area=0
-while IFS= read -r candidate; do
-  [ -n "$candidate" ] || continue
-  geometry="$(xdotool getwindowgeometry --shell "$candidate" 2>/dev/null || true)"
-  width="$(printf '%s\\n' "$geometry" | sed -n 's/^WIDTH=//p')"
-  height="$(printf '%s\\n' "$geometry" | sed -n 's/^HEIGHT=//p')"
-  [[ "$width" =~ ^[0-9]+$ && "$height" =~ ^[0-9]+$ ]] || continue
-  area=$((width * height))
-  if (( area > largest_area && width >= 320 && height >= 240 )); then
-    largest_area=$area
-    window_id="$candidate"
-  fi
-done < <(xdotool search --onlyvisible --name '.*' 2>/dev/null || true)
+# Validate the actual client log before shutting the client down. The self-test
+# above only validates the checker implementation, not this run's resources.
+python scripts/check_client_model_bake.py "$LOG" || fail "Client resource/model validation failed."
 
-[ -n "$window_id" ] || fail "No visible Minecraft-sized X11 window found on DISPLAY=$DISPLAY."
-echo "Closing visible client window $window_id ($largest_area pixels)."
+# Xvfb is intentionally run without a window manager, so Alt+F4 has no WM to
+# handle it. Ask the running JVM to exit through the JDK attach mechanism;
+# this executes normal JVM shutdown hooks and lets Gradle finish runClient.
+mapfile -t CLIENT_PIDS < <(pgrep -f 'net\.minecraft\.client\.main\.Main' || true)
+[ "${#CLIENT_PIDS[@]}" -eq 1 ] || fail "Expected exactly one Minecraft client JVM; found ${#CLIENT_PIDS[@]}."
+CLIENT_PID="${CLIENT_PIDS[0]}"
+echo "Requesting graceful JVM shutdown for Minecraft PID $CLIENT_PID after successful resource validation."
+jcmd "$CLIENT_PID" VM.exit || fail "Could not request Minecraft JVM shutdown through jcmd."
 
-# This image's xdotool version does not provide windowquit. Focus the
-# SDL window and send a real XTEST Alt+F4 key chord instead of destroying
-# the X11 window (which leaves the client process running).
-xdotool windowfocus "$window_id" || fail "Could not focus the Minecraft window."
-xdotool key --clearmodifiers alt+F4 || fail "Could not send the Minecraft quit shortcut."
 set +e
 for _ in $(seq 1 30); do
   kill -0 "$PID" 2>/dev/null || break
   sleep 1
 done
 if kill -0 "$PID" 2>/dev/null; then
-  fail "Minecraft did not shut down gracefully within 30 seconds."
+  fail "Gradle did not finish after the Minecraft JVM shutdown request."
 fi
 wait "$PID"
 status=$?
 set -e
 cat "$SMOKE"
-[ "$status" -eq 0 ] || fail "Gradle/client exited with status $status after graceful window close."
-python scripts/check_client_model_bake.py "$LOG"
+[ "$status" -eq 0 ] || fail "Gradle/client exited with status $status after validated JVM shutdown."
