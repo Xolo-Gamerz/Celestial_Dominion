@@ -48,11 +48,3 @@ jobs:
             ghcr.io/xolo-gamerz/celestial-dominion-ci:${{ github.sha }}
           cache-from: type=gha,scope=ci-runtime
           cache-to: type=gha,mode=max,scope=ci-runtime
-
-      - name: Make GHCR image public
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh api --method PATCH \
-            /user/packages/container/celestial-dominion-ci/visibility \
-            -f visibility=public
