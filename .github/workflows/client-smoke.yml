@@ -113,7 +113,7 @@ jobs:
           if grep -q '^narrator:' "$OPTIONS"; then
             sed -i 's/^narrator:.*/narrator:0/' "$OPTIONS"
           else
-            printf '\\nnarrator:0\\n' >> "$OPTIONS"
+            printf '\nnarrator:0\n' >> "$OPTIONS"
           fi
 
           # Keep the smoke-test controller inside xvfb-run. That gives both
