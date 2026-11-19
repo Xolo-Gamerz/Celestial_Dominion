@@ -57,11 +57,10 @@ grep -Eq "Using graphics backend Vulkan," "$LOG" || fail "Minecraft did not init
 # above only validates the checker implementation, not this run's resources.
 python scripts/check_client_model_bake.py "$LOG" || fail "Client resource/model validation failed."
 
-# Close the actual Minecraft window through X11's graceful window-close
-# protocol. xdotool windowquit sends the close request to the client; unlike
-# windowclose/windowkill, it does not destroy the X window behind the app's
-# back. This works without a window manager and lets GLFW/Minecraft perform
-# their normal shutdown path.
+# Send ICCCM WM_DELETE_WINDOW directly to the GLFW client. There is no
+# window manager inside xvfb-run, so EWMH window-manager close requests cannot
+# be handled here. The helper verifies that the client advertises this protocol
+# before sending it; GLFW turns it into its normal window-close callback.
 JVM_LIST="$(jcmd -l 2>&1)" || fail "Could not enumerate JVMs with jcmd: $JVM_LIST"
 echo "JVMs visible to jcmd:"
 printf '%s\n' "$JVM_LIST"
@@ -76,12 +75,12 @@ mapfile -t CLIENT_PIDS < <(
 }
 CLIENT_PID="${CLIENT_PIDS[0]}"
 
-command -v xdotool >/dev/null 2>&1 || fail "xdotool is required to close the Minecraft window gracefully."
+command -v xdotool >/dev/null 2>&1 || fail "xdotool is required to locate the Minecraft window."
 mapfile -t CLIENT_WINDOWS < <(xdotool search --onlyvisible --pid "$CLIENT_PID" 2>/dev/null || true)
 [ "${#CLIENT_WINDOWS[@]}" -eq 1 ] || fail "Expected exactly one visible X11 window for client PID $CLIENT_PID; found ${#CLIENT_WINDOWS[@]}."
 CLIENT_WINDOW="${CLIENT_WINDOWS[0]}"
-echo "Requesting graceful X11 window close for Minecraft PID $CLIENT_PID (window $CLIENT_WINDOW)."
-xdotool windowquit "$CLIENT_WINDOW" || fail "Could not send graceful close request to Minecraft window."
+echo "Requesting ICCCM WM_DELETE_WINDOW for Minecraft PID $CLIENT_PID (window $CLIENT_WINDOW)."
+python scripts/send_x11_close.py "$CLIENT_WINDOW" || fail "Could not send graceful WM_DELETE_WINDOW request to Minecraft window."
 
 set +e
 for _ in $(seq 1 30); do
