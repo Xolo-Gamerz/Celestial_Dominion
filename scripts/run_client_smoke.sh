@@ -57,12 +57,11 @@ grep -Eq "Using graphics backend Vulkan," "$LOG" || fail "Minecraft did not init
 # above only validates the checker implementation, not this run's resources.
 python scripts/check_client_model_bake.py "$LOG" || fail "Client resource/model validation failed."
 
-# Xvfb is intentionally run without a window manager, so Alt+F4 has no WM to
-# handle it. Ask the running JVM to exit through the JDK attach mechanism;
-# this executes normal JVM shutdown hooks and lets Gradle finish runClient.
-# NeoForge's actual client main class is launcher/version dependent, so do
-# not identify it by a hard-coded net.minecraft main-class command-line match.
-# jcmd reports the main class for every attach-visible JVM in this container.
+# Close the actual Minecraft window through X11's graceful window-close
+# protocol. xdotool windowquit sends the close request to the client; unlike
+# windowclose/windowkill, it does not destroy the X window behind the app's
+# back. This works without a window manager and lets GLFW/Minecraft perform
+# their normal shutdown path.
 JVM_LIST="$(jcmd -l 2>&1)" || fail "Could not enumerate JVMs with jcmd: $JVM_LIST"
 echo "JVMs visible to jcmd:"
 printf '%s\n' "$JVM_LIST"
@@ -76,8 +75,13 @@ mapfile -t CLIENT_PIDS < <(
   fail "Expected exactly one NeoForge client JVM from jcmd -l; found ${#CLIENT_PIDS[@]}."
 }
 CLIENT_PID="${CLIENT_PIDS[0]}"
-echo "Requesting graceful JVM shutdown for client PID $CLIENT_PID after successful resource validation."
-jcmd "$CLIENT_PID" VM.exit || fail "Could not request client JVM shutdown through jcmd."
+
+command -v xdotool >/dev/null 2>&1 || fail "xdotool is required to close the Minecraft window gracefully."
+mapfile -t CLIENT_WINDOWS < <(xdotool search --onlyvisible --pid "$CLIENT_PID" 2>/dev/null || true)
+[ "${#CLIENT_WINDOWS[@]}" -eq 1 ] || fail "Expected exactly one visible X11 window for client PID $CLIENT_PID; found ${#CLIENT_WINDOWS[@]}."
+CLIENT_WINDOW="${CLIENT_WINDOWS[0]}"
+echo "Requesting graceful X11 window close for Minecraft PID $CLIENT_PID (window $CLIENT_WINDOW)."
+xdotool windowquit "$CLIENT_WINDOW" || fail "Could not send graceful close request to Minecraft window."
 
 set +e
 for _ in $(seq 1 30); do
