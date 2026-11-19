@@ -73,8 +73,11 @@ done < <(xdotool search --onlyvisible --name '.*' 2>/dev/null || true)
 [ -n "$window_id" ] || fail "No visible Minecraft-sized X11 window found on DISPLAY=$DISPLAY."
 echo "Closing visible client window $window_id ($largest_area pixels)."
 
-# windowquit sends WM_DELETE_WINDOW; windowclose only destroys the X11 window.
-xdotool windowquit "$window_id" || fail "Could not send the Minecraft graceful-close request."
+# This image's xdotool version does not provide windowquit. Focus the
+# SDL window and send a real XTEST Alt+F4 key chord instead of destroying
+# the X11 window (which leaves the client process running).
+xdotool windowfocus "$window_id" || fail "Could not focus the Minecraft window."
+xdotool key --clearmodifiers alt+F4 || fail "Could not send the Minecraft quit shortcut."
 set +e
 for _ in $(seq 1 30); do
   kill -0 "$PID" 2>/dev/null || break
