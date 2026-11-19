@@ -141,8 +141,16 @@ def main():
         item = read_json(item_path) if item_path.exists() else None
         if not model or model.get("parent") != "minecraft:item/generated":
             fail(f"{name}: spear must use the generated vanilla spear sprite model")
-        if not item or item.get("model", {}).get("model") != f"celestial_dominion:item/{name}":
-            fail(f"{name}: client item does not point to its spear model")
+        definition = item.get("model", {}) if item else {}
+        cases = definition.get("cases", [])
+        gui_model = cases[0].get("model", {}).get("model") if cases else None
+        held_model = definition.get("fallback", {}).get("model")
+        held_path = ASSETS / "models/item" / f"{name}_in_hand.json"
+        held = read_json(held_path) if held_path.exists() else None
+        if definition.get("type") != "minecraft:select" or gui_model != f"celestial_dominion:item/{name}":
+            fail(f"{name}: spear item definition must select its GUI sprite by display context")
+        if held_model != f"celestial_dominion:item/{name}_in_hand" or not held:
+            fail(f"{name}: spear must use a dedicated held model for vanilla jab/charge animations")
         check_png(texture_path, (64, 64))
         recipe = read_json(recipes / f"{name}.json")
         if not recipe or recipe.get("type") != "minecraft:smithing_transform":
