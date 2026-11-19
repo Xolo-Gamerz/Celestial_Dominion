@@ -53,23 +53,25 @@ done
 (( stable_samples >= 3 )) || fail "Texture-atlas creation did not complete (last observed count: $last_atlas_count)."
 grep -Eq "Using graphics backend Vulkan," "$LOG" || fail "Minecraft did not initialize the Vulkan graphics backend."
 
-# xvfb-run exports DISPLAY only to its child process. This script runs inside
-# that child, so xdotool talks to the exact X server hosting Minecraft.
+# Select the largest visible top-level X11 window instead of relying on
+# title/class metadata. Minecraft's SDL/LWJGL title varies across versions.
 window_id=""
-for _ in $(seq 1 40); do
-  while IFS= read -r candidate; do
-    [ -n "$candidate" ] || continue
-    window_name="$(xdotool getwindowname "$candidate" 2>/dev/null || true)"
-    window_class="$(xdotool getwindowclassname "$candidate" 2>/dev/null || true)"
-    if [[ "$window_name $window_class" =~ [Mm]inecraft|[Ll][Ww][Jj][Gg][Ll] ]]; then
-      window_id="$candidate"
-      break
-    fi
-  done < <(xdotool search --name '.*' 2>/dev/null || true)
-  [ -n "$window_id" ] && break
-  sleep 0.25
-done
-[ -n "$window_id" ] || fail "Could not identify Minecraft's X11 window on DISPLAY=$DISPLAY."
+largest_area=0
+while IFS= read -r candidate; do
+  [ -n "$candidate" ] || continue
+  geometry="$(xdotool getwindowgeometry --shell "$candidate" 2>/dev/null || true)"
+  width="$(printf '%s\\n' "$geometry" | sed -n 's/^WIDTH=//p')"
+  height="$(printf '%s\\n' "$geometry" | sed -n 's/^HEIGHT=//p')"
+  [[ "$width" =~ ^[0-9]+$ && "$height" =~ ^[0-9]+$ ]] || continue
+  area=$((width * height))
+  if (( area > largest_area && width >= 320 && height >= 240 )); then
+    largest_area=$area
+    window_id="$candidate"
+  fi
+done < <(xdotool search --onlyvisible --name '.*' 2>/dev/null || true)
+
+[ -n "$window_id" ] || fail "No visible Minecraft-sized X11 window found on DISPLAY=$DISPLAY."
+echo "Closing visible client window $window_id ($largest_area pixels)."
 
 xdotool windowclose "$window_id" || fail "Could not send the Minecraft window-close event."
 set +e
