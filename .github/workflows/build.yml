@@ -25,6 +25,8 @@ jobs:
         uses: actions/setup-python@v6
         with:
           python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements-ci.txt
 
       - name: Set up Java 25
         uses: actions/setup-java@v6
@@ -42,7 +44,7 @@ jobs:
           cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork }}
 
       - name: Install asset generator dependency
-        run: python -m pip install --disable-pip-version-check pillow
+        run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
 
       - name: Generate assets
         run: |
