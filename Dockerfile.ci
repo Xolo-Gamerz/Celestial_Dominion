@@ -3,7 +3,7 @@ FROM ubuntu:24.04
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
  && apt-get install -y --no-install-recommends \
-      ca-certificates curl gnupg xvfb mesa-vulkan-drivers xdotool \
+      ca-certificates curl gnupg git unzip xvfb mesa-vulkan-drivers xdotool \
       libflite1 python3 python-is-python3 python3-pil \
  && install -d -m 0755 /etc/apt/keyrings \
  && curl -fsSL https://packages.adoptium.net/artifactory/api/gpg/key/public \
