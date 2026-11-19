@@ -54,10 +54,14 @@ def main():
             model = read_json(model_path) if model_path.exists() else None
             item = read_json(item_path) if item_path.exists() else None
             if model:
-                if model.get("parent") != "minecraft:item/handheld":
-                    fail(f"{name}: tool must use Minecraft's vanilla handheld item model")
-                if model.get("elements"):
-                    fail(f"{name}: custom cuboid geometry is forbidden; use the vanilla 2D sprite path")
+                if not model.get("elements"):
+                    fail(f"{name}: relic tool must use an extruded 3D item model")
+                if model.get("parent"):
+                    fail(f"{name}: custom 3D relic model must not inherit a flat vanilla parent")
+                display = model.get("display", {})
+                for context in ("firstperson_righthand", "thirdperson_righthand"):
+                    if display.get(context, {}).get("scale", [0, 0, 0])[0] < 1.1:
+                        fail(f"{name}: held model must be slightly larger than vanilla")
             if item and item.get("model", {}).get("model") != f"celestial_dominion:item/{name}":
                 fail(f"{name}: client item does not point to its generated sprite model")
             size = check_png(texture_path, (32, 32))
@@ -274,7 +278,7 @@ def main():
         return 1
     print("ASSET VALIDATION PASSED")
     print(" - all JSON resources parse")
-    print(" - all 18 tools/weapons use vanilla handheld models and 32x32 pixel-art sprites")
+    print(" - all 18 tools/weapons use extruded 3D models, larger held transforms and 32x32 pixel-art sprites")
     print(" - all 6 ingredients use vanilla generated-item models and 32x32 sprites")
     print(" - 9 armor atlases, 9 transparent ornament overlays and 3 animated wing sheets have expected dimensions")
     print(" - all 15 tool smithing recipes exist")
