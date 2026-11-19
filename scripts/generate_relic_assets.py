@@ -240,6 +240,53 @@ def flat_model(item_id, handheld):
     }
 
 
+
+def make_spear_sprite(material):
+    p = PALETTES[material]
+    image = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(image)
+    line(draw, [(13,58),(49,13)], p["outline"], 10)
+    line(draw, [(14,57),(48,14)], p["handle"], 7)
+    line(draw, [(15,55),(47,15)], p["handle_light"], 3)
+    for i in range(4):
+        x, y = 17 + i * 4, 53 - i * 5
+        line(draw, [(x-3,y+3),(x+2,y-2)], p["edge"], 2)
+    outlined_polygon(draw, [(8,56),(14,52),(19,57),(16,63),(10,62)],
+                     p["metal_dark"], p["outline"])
+    outlined_polygon(draw, [(40,20),(47,10),(53,12),(46,24)],
+                     p["metal_dark"], p["outline"])
+    if material == "solar":
+        outlined_polygon(draw, [(49,2),(62,8),(57,17),(49,25),(43,17)],
+                         p["metal_dark"], p["outline"])
+        outlined_polygon(draw, [(50,4),(58,9),(54,16),(49,21),(46,16)],
+                         p["metal"], p["edge"])
+        outlined_polygon(draw, [(47,14),(39,10),(43,19),(49,20)],
+                         p["gem"], p["outline"])
+        outlined_polygon(draw, [(55,15),(61,19),(54,18)], p["edge"], p["outline"])
+        draw.point((54,8), fill=p["shine"])
+    elif material == "abyssal":
+        outlined_polygon(draw, [(50,2),(62,8),(57,17),(50,24),(44,17),(47,9)],
+                         p["metal_dark"], p["outline"])
+        outlined_polygon(draw, [(51,4),(59,9),(55,16),(50,21),(47,16)],
+                         p["edge"], p["shine"])
+        outlined_polygon(draw, [(47,14),(40,8),(43,19)],
+                         p["metal"], p["outline"])
+        line(draw, [(50,21),(44,26)], p["edge"], 2)
+        draw.point((54,8), fill=p["shine"])
+    else:
+        outlined_polygon(draw, [(52,2),(61,8),(56,17),(51,24),(45,17),(48,8)],
+                         p["metal_dark"], p["outline"])
+        outlined_polygon(draw, [(52,4),(58,9),(55,16),(51,21),(48,16)],
+                         p["metal"], p["edge"])
+        outlined_polygon(draw, [(52,5),(56,9),(52,14),(49,9)],
+                         p["shine"], p["edge"])
+        outlined_polygon(draw, [(48,14),(41,12),(45,20)],
+                         p["gem"], p["outline"])
+    for x, y in ((25,45),(31,38),(37,31)):
+        draw.point((x,y), fill=p["gem"])
+        draw.point((x+1,y-1), fill=p["shine"])
+    return image
+
 def main():
     MODELS.mkdir(parents=True, exist_ok=True)
     TEXTURES.mkdir(parents=True, exist_ok=True)
@@ -270,6 +317,42 @@ def main():
         json.dumps(flat_model(catalyst, handheld=False), indent=2) + "\n",
         encoding="utf-8",
     )
+
+    # Native 26.3 spears need a GUI model and a dedicated held model so the
+    # vanilla jab/charge animations and display-context switching remain intact.
+    item_definitions = ROOT / "items"
+    item_definitions.mkdir(parents=True, exist_ok=True)
+    for material in PALETTES:
+        spear = f"{material}_spear"
+        make_spear_sprite(material).save(TEXTURES / f"{spear}.png", optimize=True)
+        (MODELS / f"{spear}.json").write_text(
+            json.dumps(flat_model(spear, handheld=False), indent=2) + "\n",
+            encoding="utf-8",
+        )
+        held_model = {
+            "parent": "minecraft:item/netherite_spear_in_hand",
+            "textures": {"layer0": f"celestial_dominion:item/{spear}"},
+        }
+        (MODELS / f"{spear}_in_hand.json").write_text(
+            json.dumps(held_model, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        definition = {
+            "model": {
+                "type": "minecraft:select",
+                "property": "minecraft:display_context",
+                "cases": [{
+                    "when": ["gui", "ground", "fixed", "on_shelf"],
+                    "model": {"type": "minecraft:model", "model": f"celestial_dominion:item/{spear}"},
+                }],
+                "fallback": {"type": "minecraft:model", "model": f"celestial_dominion:item/{spear}_in_hand"},
+            },
+            "swap_animation_scale": 1.95,
+        }
+        (item_definitions / f"{spear}.json").write_text(
+            json.dumps(definition, indent=2) + "\n",
+            encoding="utf-8",
+        )
 
 
 if __name__ == "__main__":
