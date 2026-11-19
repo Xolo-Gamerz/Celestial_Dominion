@@ -43,13 +43,13 @@ public final class ModCreativeTabs {
     private static void addArmorAndWeapons(CreativeModeTab.Output output) {
         output.accept(ModItems.SOLAR_HELMET.get()); output.accept(ModItems.SOLAR_CHESTPLATE.get());
         output.accept(ModItems.SOLAR_LEGGINGS.get()); output.accept(ModItems.SOLAR_BOOTS.get());
-        output.accept(ModItems.SOLAR_SWORD.get());
+        output.accept(ModItems.SOLAR_SWORD.get()); output.accept(ModItems.SOLAR_SPEAR.get());
         output.accept(ModItems.ABYSSAL_HELMET.get()); output.accept(ModItems.ABYSSAL_CHESTPLATE.get());
         output.accept(ModItems.ABYSSAL_LEGGINGS.get()); output.accept(ModItems.ABYSSAL_BOOTS.get());
-        output.accept(ModItems.ABYSSAL_SWORD.get());
+        output.accept(ModItems.ABYSSAL_SWORD.get()); output.accept(ModItems.ABYSSAL_SPEAR.get());
         output.accept(ModItems.CELESTIAL_HELMET.get()); output.accept(ModItems.CELESTIAL_CHESTPLATE.get());
         output.accept(ModItems.CELESTIAL_LEGGINGS.get()); output.accept(ModItems.CELESTIAL_BOOTS.get());
-        output.accept(ModItems.CELESTIAL_SWORD.get());
+        output.accept(ModItems.CELESTIAL_SWORD.get()); output.accept(ModItems.CELESTIAL_SPEAR.get());
     }
 
     private static void addTools(CreativeModeTab.Output output, net.minecraft.world.item.Item pickaxe,
