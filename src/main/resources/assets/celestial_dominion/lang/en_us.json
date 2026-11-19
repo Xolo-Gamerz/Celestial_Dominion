@@ -72,5 +72,8 @@
   "tooltip.celestial_dominion.solar_tools": "OFFENCE PATH: higher attack damage, fast strikes and strong mining. Less defensive than Abyssal gear.",
   "tooltip.celestial_dominion.abyssal_tools": "DEFENCE / CONTROL PATH: lower attack damage, excellent mining speed and durability. Built to outlast the fight.",
   "tooltip.celestial_dominion.celestial_tools": "FINAL ASCENSION: the highest damage, mining speed and durability, forged from both paths.",
-  "tooltip.celestial_dominion.multitool": "OMNITOOL: mines stone, ores, wood and earth; also strips logs, scrapes copper, paths dirt, douses campfires and tills soil."
+  "tooltip.celestial_dominion.multitool": "OMNITOOL: mines stone, ores, wood and earth; also strips logs, scrapes copper, paths dirt, douses campfires and tills soil.",
+  "item.celestial_dominion.solar_spear": "Solflare, Lance of the First Dawn",
+  "item.celestial_dominion.abyssal_spear": "Riftpiercer, Lance of the Drowned King",
+  "item.celestial_dominion.celestial_spear": "Astral Verdict, Spear of the Firmament"
 }
