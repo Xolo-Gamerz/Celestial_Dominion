@@ -51,7 +51,7 @@ while (( SECONDS < atlas_deadline )); do
   sleep 0.25
 done
 (( stable_samples >= 3 )) || fail "Texture-atlas creation did not complete (last observed count: $last_atlas_count)."
-grep -Eq "Using graphics backend (Vulkan|OpenGL)" "$LOG" || fail "Minecraft did not initialize a graphics backend."
+grep -Eq "Using graphics backend Vulkan," "$LOG" || fail "Minecraft did not initialize the Vulkan graphics backend."
 
 # xvfb-run exports DISPLAY only to its child process. This script runs inside
 # that child, so xdotool talks to the exact X server hosting Minecraft.
