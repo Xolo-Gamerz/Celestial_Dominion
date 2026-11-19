@@ -108,35 +108,35 @@ public final class ModItems {
     public static final DeferredItem<Item> CELESTIAL_BOOTS = armorItem("celestial_boots", CELESTIAL_ARMOR, ArmorType.BOOTS);
 
     public static final DeferredItem<Item> SOLAR_SWORD = ITEMS.registerItem("solar_sword",
-            p -> new AbilitySwordItem(p.sword(SOLAR_TOOL, 12.0F, -1.4F), AbilitySwordItem.Mode.SOLAR));
+            p -> new AbilitySwordItem(p.sword(SOLAR_TOOL, 10.0F, -1.2F), AbilitySwordItem.Mode.SOLAR));
     public static final DeferredItem<Item> ABYSSAL_SWORD = ITEMS.registerItem("abyssal_sword",
-            p -> new AbilitySwordItem(p.sword(ABYSSAL_TOOL, 8.0F, -2.2F), AbilitySwordItem.Mode.ABYSSAL));
+            p -> new AbilitySwordItem(p.sword(ABYSSAL_TOOL, 12.0F, -1.6F), AbilitySwordItem.Mode.ABYSSAL));
     public static final DeferredItem<Item> CELESTIAL_SWORD = ITEMS.registerItem("celestial_sword",
-            p -> new AbilitySwordItem(unbreakable(p.sword(CELESTIAL_TOOL, 16.0F, -1.4F)), AbilitySwordItem.Mode.CELESTIAL));
+            p -> new AbilitySwordItem(unbreakable(p.sword(CELESTIAL_TOOL, 13.0F, -1.0F)), AbilitySwordItem.Mode.CELESTIAL));
 
     // Dedicated tools retain vanilla mining rules, enchantment compatibility and block interactions.
-    public static final DeferredItem<Item> SOLAR_PICKAXE = ITEMS.registerItem("solar_pickaxe", p -> new Item(p.pickaxe(SOLAR_MINING_TOOL, 1.0F, -2.8F).fireResistant()));
-    public static final DeferredItem<Item> SOLAR_AXE = ITEMS.registerItem("solar_axe", p -> new Item(p.axe(SOLAR_MINING_TOOL, 5.0F, -3.0F).fireResistant()));
-    public static final DeferredItem<Item> SOLAR_SHOVEL = ITEMS.registerItem("solar_shovel", p -> new Item(p.shovel(SOLAR_MINING_TOOL, 1.0F, -3.0F).fireResistant()));
-    public static final DeferredItem<Item> SOLAR_HOE = ITEMS.registerItem("solar_hoe", p -> new Item(p.hoe(SOLAR_MINING_TOOL, 0.0F, -1.0F).fireResistant()));
+    public static final DeferredItem<Item> SOLAR_PICKAXE = ITEMS.registerItem("solar_pickaxe", p -> new Item(p.pickaxe(SOLAR_MINING_TOOL, 1.0F, -2.6F).fireResistant()));
+    public static final DeferredItem<Item> SOLAR_AXE = ITEMS.registerItem("solar_axe", p -> new Item(p.axe(SOLAR_MINING_TOOL, 5.0F, -2.6F).fireResistant()));
+    public static final DeferredItem<Item> SOLAR_SHOVEL = ITEMS.registerItem("solar_shovel", p -> new Item(p.shovel(SOLAR_MINING_TOOL, 1.0F, -2.6F).fireResistant()));
+    public static final DeferredItem<Item> SOLAR_HOE = ITEMS.registerItem("solar_hoe", p -> new Item(p.hoe(SOLAR_MINING_TOOL, 0.0F, -0.6F).fireResistant()));
 
-    public static final DeferredItem<Item> ABYSSAL_PICKAXE = ITEMS.registerItem("abyssal_pickaxe", p -> new Item(p.pickaxe(ABYSSAL_MINING_TOOL, 2.0F, -2.8F).fireResistant()));
-    public static final DeferredItem<Item> ABYSSAL_AXE = ITEMS.registerItem("abyssal_axe", p -> new Item(p.axe(ABYSSAL_MINING_TOOL, 6.0F, -3.0F).fireResistant()));
-    public static final DeferredItem<Item> ABYSSAL_SHOVEL = ITEMS.registerItem("abyssal_shovel", p -> new Item(p.shovel(ABYSSAL_MINING_TOOL, 2.0F, -3.0F).fireResistant()));
-    public static final DeferredItem<Item> ABYSSAL_HOE = ITEMS.registerItem("abyssal_hoe", p -> new Item(p.hoe(ABYSSAL_MINING_TOOL, 1.0F, -1.0F).fireResistant()));
+    public static final DeferredItem<Item> ABYSSAL_PICKAXE = ITEMS.registerItem("abyssal_pickaxe", p -> new Item(p.pickaxe(ABYSSAL_MINING_TOOL, 2.0F, -3.0F).fireResistant()));
+    public static final DeferredItem<Item> ABYSSAL_AXE = ITEMS.registerItem("abyssal_axe", p -> new Item(p.axe(ABYSSAL_MINING_TOOL, 6.0F, -3.2F).fireResistant()));
+    public static final DeferredItem<Item> ABYSSAL_SHOVEL = ITEMS.registerItem("abyssal_shovel", p -> new Item(p.shovel(ABYSSAL_MINING_TOOL, 2.0F, -3.2F).fireResistant()));
+    public static final DeferredItem<Item> ABYSSAL_HOE = ITEMS.registerItem("abyssal_hoe", p -> new Item(p.hoe(ABYSSAL_MINING_TOOL, 1.0F, -1.2F).fireResistant()));
 
-    public static final DeferredItem<Item> CELESTIAL_PICKAXE = ITEMS.registerItem("celestial_pickaxe", p -> new Item(unbreakable(p.pickaxe(CELESTIAL_MINING_TOOL, 3.0F, -2.8F)).fireResistant()));
-    public static final DeferredItem<Item> CELESTIAL_AXE = ITEMS.registerItem("celestial_axe", p -> new Item(unbreakable(p.axe(CELESTIAL_MINING_TOOL, 7.0F, -3.0F)).fireResistant()));
-    public static final DeferredItem<Item> CELESTIAL_SHOVEL = ITEMS.registerItem("celestial_shovel", p -> new Item(unbreakable(p.shovel(CELESTIAL_MINING_TOOL, 3.0F, -3.0F)).fireResistant()));
-    public static final DeferredItem<Item> CELESTIAL_HOE = ITEMS.registerItem("celestial_hoe", p -> new Item(unbreakable(p.hoe(CELESTIAL_MINING_TOOL, 2.0F, -1.0F)).fireResistant()));
+    public static final DeferredItem<Item> CELESTIAL_PICKAXE = ITEMS.registerItem("celestial_pickaxe", p -> new Item(unbreakable(p.pickaxe(CELESTIAL_MINING_TOOL, 3.0F, -2.4F)).fireResistant()));
+    public static final DeferredItem<Item> CELESTIAL_AXE = ITEMS.registerItem("celestial_axe", p -> new Item(unbreakable(p.axe(CELESTIAL_MINING_TOOL, 7.0F, -2.4F)).fireResistant()));
+    public static final DeferredItem<Item> CELESTIAL_SHOVEL = ITEMS.registerItem("celestial_shovel", p -> new Item(unbreakable(p.shovel(CELESTIAL_MINING_TOOL, 3.0F, -2.4F)).fireResistant()));
+    public static final DeferredItem<Item> CELESTIAL_HOE = ITEMS.registerItem("celestial_hoe", p -> new Item(unbreakable(p.hoe(CELESTIAL_MINING_TOOL, 2.0F, -0.4F)).fireResistant()));
 
     // Native Minecraft spear behaviour: jab, charge, reach and vanilla spear animations.
     public static final DeferredItem<Item> SOLAR_SPEAR = ITEMS.registerItem("solar_spear",
-            p -> new Item(p.spear(SOLAR_TOOL, 1.05F, 1.15F, 0.45F, 2.5F, 8.5F, 5.0F, 5.1F, 8.75F, 4.6F).fireResistant()));
+            p -> new Item(p.spear(SOLAR_TOOL, 0.90F, 1.15F, 0.45F, 2.5F, 8.5F, 5.0F, 5.1F, 8.75F, 4.6F).fireResistant()));
     public static final DeferredItem<Item> ABYSSAL_SPEAR = ITEMS.registerItem("abyssal_spear",
-            p -> new Item(p.spear(ABYSSAL_TOOL, 1.10F, 1.20F, 0.42F, 2.5F, 8.5F, 5.0F, 5.1F, 8.75F, 4.6F).fireResistant()));
+            p -> new Item(p.spear(ABYSSAL_TOOL, 1.00F, 1.20F, 0.42F, 2.5F, 8.5F, 5.0F, 5.1F, 8.75F, 4.6F).fireResistant()));
     public static final DeferredItem<Item> CELESTIAL_SPEAR = ITEMS.registerItem("celestial_spear",
-            p -> new Item(unbreakable(p.spear(CELESTIAL_TOOL, 1.15F, 1.30F, 0.40F, 2.5F, 8.5F, 5.0F, 5.1F, 8.75F, 4.6F)).fireResistant()));
+            p -> new Item(unbreakable(p.spear(CELESTIAL_TOOL, 0.80F, 1.30F, 0.40F, 2.5F, 8.5F, 5.0F, 5.1F, 8.75F, 4.6F)).fireResistant()));
 
     public static final DeferredItem<Item> SOLAR_MULTITOOL = ITEMS.registerItem("solar_multitool",
             p -> new CelestialMultitoolItem(multitoolProperties(p, SOLAR_MINING_TOOL, 1.0F, -2.7F)));
