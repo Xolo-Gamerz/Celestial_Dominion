@@ -3,6 +3,7 @@ package dev.xolo.celestialdominion.content;
 import dev.xolo.celestialdominion.CelestialDominion;
 import dev.xolo.celestialdominion.item.AbilitySwordItem;
 import dev.xolo.celestialdominion.item.CelestialMultitoolItem;
+import com.mojang.datafixers.util.Unit;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -60,16 +61,16 @@ public final class ModItems {
                 toughness, knockbackResistance, REPAIR_TAG, asset(assetName));
     }
 
-    private static final ArmorMaterial SOLAR_ARMOR = armor("solar", 220, 9, 15, 11, 8, 2.5F, 0.05F);
-    private static final ArmorMaterial ABYSSAL_ARMOR = armor("abyssal", 280, 13, 21, 16, 12, 4.0F, 0.20F);
-    private static final ArmorMaterial CELESTIAL_ARMOR = armor("celestial", 360, 16, 26, 20, 16, 5.0F, 0.25F);
+    private static final ArmorMaterial SOLAR_ARMOR = armor("solar", 320, 9, 15, 11, 8, 2.5F, 0.05F);
+    private static final ArmorMaterial ABYSSAL_ARMOR = armor("abyssal", 480, 13, 21, 16, 12, 4.0F, 0.20F);
+    private static final ArmorMaterial CELESTIAL_ARMOR = armor("celestial", 640, 16, 26, 20, 16, 5.0F, 0.25F);
 
     private static final ToolMaterial SOLAR_TOOL = new ToolMaterial(
-            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 12000, 16.0F, 8.0F, 30, REPAIR_TAG);
+            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 24000, 16.0F, 8.0F, 30, REPAIR_TAG);
     private static final ToolMaterial ABYSSAL_TOOL = new ToolMaterial(
-            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 18000, 18.0F, 2.0F, 30, REPAIR_TAG);
+            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 36000, 18.0F, 2.0F, 30, REPAIR_TAG);
     private static final ToolMaterial CELESTIAL_TOOL = new ToolMaterial(
-            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 30000, 22.0F, 12.0F, 40, REPAIR_TAG);
+            BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 48000, 22.0F, 12.0F, 40, REPAIR_TAG);
 
     // Mining tools share each tier's speed, durability and repair material, but not sword-level damage.
     private static final ToolMaterial SOLAR_MINING_TOOL = new ToolMaterial(
@@ -77,7 +78,7 @@ public final class ModItems {
     private static final ToolMaterial ABYSSAL_MINING_TOOL = new ToolMaterial(
             BlockTags.INCORRECT_FOR_NETHERITE_TOOL, 18000, 18.0F, 2.0F, 30, REPAIR_TAG);
     private static final ToolMaterial CELESTIAL_MINING_TOOL = new ToolMaterial(
-            INCORRECT_FOR_CELESTIAL_TOOL, 30000, 22.0F, 6.0F, 40, REPAIR_TAG);
+            INCORRECT_FOR_CELESTIAL_TOOL, 48000, 22.0F, 6.0F, 40, REPAIR_TAG);
 
     public static final DeferredItem<Item> SOLAR_ORE_ITEM = ITEMS.registerItem(
             "solar_ore", properties -> new BlockItem(ModBlocks.SOLAR_ORE.get(), properties));
@@ -111,7 +112,7 @@ public final class ModItems {
     public static final DeferredItem<Item> ABYSSAL_SWORD = ITEMS.registerItem("abyssal_sword",
             p -> new AbilitySwordItem(p.sword(ABYSSAL_TOOL, 8.0F, -2.2F), AbilitySwordItem.Mode.ABYSSAL));
     public static final DeferredItem<Item> CELESTIAL_SWORD = ITEMS.registerItem("celestial_sword",
-            p -> new AbilitySwordItem(p.sword(CELESTIAL_TOOL, 16.0F, -1.4F), AbilitySwordItem.Mode.CELESTIAL));
+            p -> new AbilitySwordItem(unbreakable(p.sword(CELESTIAL_TOOL, 16.0F, -1.4F)), AbilitySwordItem.Mode.CELESTIAL));
 
     // Dedicated tools retain vanilla mining rules, enchantment compatibility and block interactions.
     public static final DeferredItem<Item> SOLAR_PICKAXE = ITEMS.registerItem("solar_pickaxe", p -> new Item(p.pickaxe(SOLAR_MINING_TOOL, 1.0F, -2.8F).fireResistant()));
@@ -124,21 +125,33 @@ public final class ModItems {
     public static final DeferredItem<Item> ABYSSAL_SHOVEL = ITEMS.registerItem("abyssal_shovel", p -> new Item(p.shovel(ABYSSAL_MINING_TOOL, 2.0F, -3.0F).fireResistant()));
     public static final DeferredItem<Item> ABYSSAL_HOE = ITEMS.registerItem("abyssal_hoe", p -> new Item(p.hoe(ABYSSAL_MINING_TOOL, 1.0F, -1.0F).fireResistant()));
 
-    public static final DeferredItem<Item> CELESTIAL_PICKAXE = ITEMS.registerItem("celestial_pickaxe", p -> new Item(p.pickaxe(CELESTIAL_MINING_TOOL, 3.0F, -2.8F).fireResistant()));
-    public static final DeferredItem<Item> CELESTIAL_AXE = ITEMS.registerItem("celestial_axe", p -> new Item(p.axe(CELESTIAL_MINING_TOOL, 7.0F, -3.0F).fireResistant()));
-    public static final DeferredItem<Item> CELESTIAL_SHOVEL = ITEMS.registerItem("celestial_shovel", p -> new Item(p.shovel(CELESTIAL_MINING_TOOL, 3.0F, -3.0F).fireResistant()));
-    public static final DeferredItem<Item> CELESTIAL_HOE = ITEMS.registerItem("celestial_hoe", p -> new Item(p.hoe(CELESTIAL_MINING_TOOL, 2.0F, -1.0F).fireResistant()));
+    public static final DeferredItem<Item> CELESTIAL_PICKAXE = ITEMS.registerItem("celestial_pickaxe", p -> new Item(unbreakable(p.pickaxe(CELESTIAL_MINING_TOOL, 3.0F, -2.8F)).fireResistant()));
+    public static final DeferredItem<Item> CELESTIAL_AXE = ITEMS.registerItem("celestial_axe", p -> new Item(unbreakable(p.axe(CELESTIAL_MINING_TOOL, 7.0F, -3.0F)).fireResistant()));
+    public static final DeferredItem<Item> CELESTIAL_SHOVEL = ITEMS.registerItem("celestial_shovel", p -> new Item(unbreakable(p.shovel(CELESTIAL_MINING_TOOL, 3.0F, -3.0F)).fireResistant()));
+    public static final DeferredItem<Item> CELESTIAL_HOE = ITEMS.registerItem("celestial_hoe", p -> new Item(unbreakable(p.hoe(CELESTIAL_MINING_TOOL, 2.0F, -1.0F)).fireResistant()));
+
+    // Native Minecraft spear behaviour: jab, charge, reach and vanilla spear animations.
+    public static final DeferredItem<Item> SOLAR_SPEAR = ITEMS.registerItem("solar_spear",
+            p -> new Item(p.spear(SOLAR_TOOL, 1.05F, 1.15F, 0.45F, 2.5F, 8.5F, 5.0F, 5.1F, 8.75F, 4.6F).fireResistant()));
+    public static final DeferredItem<Item> ABYSSAL_SPEAR = ITEMS.registerItem("abyssal_spear",
+            p -> new Item(p.spear(ABYSSAL_TOOL, 1.10F, 1.20F, 0.42F, 2.5F, 8.5F, 5.0F, 5.1F, 8.75F, 4.6F).fireResistant()));
+    public static final DeferredItem<Item> CELESTIAL_SPEAR = ITEMS.registerItem("celestial_spear",
+            p -> new Item(unbreakable(p.spear(CELESTIAL_TOOL, 1.15F, 1.30F, 0.40F, 2.5F, 8.5F, 5.0F, 5.1F, 8.75F, 4.6F)).fireResistant()));
 
     public static final DeferredItem<Item> SOLAR_MULTITOOL = ITEMS.registerItem("solar_multitool",
             p -> new CelestialMultitoolItem(multitoolProperties(p, SOLAR_MINING_TOOL, 1.0F, -2.7F)));
     public static final DeferredItem<Item> ABYSSAL_MULTITOOL = ITEMS.registerItem("abyssal_multitool",
             p -> new CelestialMultitoolItem(multitoolProperties(p, ABYSSAL_MINING_TOOL, 2.0F, -2.7F)));
     public static final DeferredItem<Item> CELESTIAL_MULTITOOL = ITEMS.registerItem("celestial_multitool",
-            p -> new CelestialMultitoolItem(multitoolProperties(p, CELESTIAL_MINING_TOOL, 3.0F, -2.6F)));
+            p -> new CelestialMultitoolItem(unbreakable(multitoolProperties(p, CELESTIAL_MINING_TOOL, 3.0F, -2.6F))));
+
+    private static Item.Properties unbreakable(Item.Properties properties) {
+        return properties.component(DataComponents.UNBREAKABLE, Unit.INSTANCE);
+    }
 
     private static Item.Properties multitoolProperties(Item.Properties properties, ToolMaterial material,
                                                         float damage, float speed) {
-        return properties.pickaxe(material, damage, speed)
+        return (material == CELESTIAL_MINING_TOOL ? unbreakable(properties) : properties).pickaxe(material, damage, speed)
                 .delayedComponent(DataComponents.TOOL, context -> {
                     var blocks = context.lookupOrThrow(Registries.BLOCK);
                     return new Tool(List.of(
@@ -153,7 +166,7 @@ public final class ModItems {
 
     private static DeferredItem<Item> armorItem(String id, ArmorMaterial material, ArmorType type) {
         return ITEMS.registerItem(id,
-                properties -> new Item(properties.humanoidArmor(material, type).fireResistant()));
+                properties -> new Item((material == CELESTIAL_ARMOR ? unbreakable(properties) : properties).humanoidArmor(material, type).fireResistant()));
     }
 
     private ModItems() {}
