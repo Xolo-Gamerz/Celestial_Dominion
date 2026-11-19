@@ -73,7 +73,8 @@ done < <(xdotool search --onlyvisible --name '.*' 2>/dev/null || true)
 [ -n "$window_id" ] || fail "No visible Minecraft-sized X11 window found on DISPLAY=$DISPLAY."
 echo "Closing visible client window $window_id ($largest_area pixels)."
 
-xdotool windowclose "$window_id" || fail "Could not send the Minecraft window-close event."
+# windowquit sends WM_DELETE_WINDOW; windowclose only destroys the X11 window.
+xdotool windowquit "$window_id" || fail "Could not send the Minecraft graceful-close request."
 set +e
 for _ in $(seq 1 30); do
   kill -0 "$PID" 2>/dev/null || break
