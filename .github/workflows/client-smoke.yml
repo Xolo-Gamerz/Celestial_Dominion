@@ -16,16 +16,13 @@ concurrency:
 jobs:
   client-smoke:
     runs-on: ubuntu-24.04
+    container:
+      image: ghcr.io/xolo-gamerz/celestial-dominion-ci:ubuntu24.04
+      options: --shm-size=2g
     timeout-minutes: 12
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-
-      - name: Set up Java 25
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: '25'
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
@@ -41,55 +38,28 @@ jobs:
           path: run/assets
           key: minecraft-assets-${{ runner.os }}-${{ hashFiles('gradle.properties') }}
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: '3.12'
-          cache: pip
-          cache-dependency-path: requirements-ci.txt
-
-      - name: Install asset generator dependency
-        run: python -m pip install --disable-pip-version-check -r requirements-ci.txt
-
       - name: Generate assets
         run: |
+          set -euo pipefail
+          # These generators both write sword/catalyst resources; keep generation
+          # serialized to avoid nondeterministic overwrites.
+
           python scripts/generate_textures.py
           python scripts/generate_relic_assets.py
-          python scripts/test_assets.py
-          python scripts/check_client_model_bake.py --self-test
 
-      # Cache downloaded Debian packages between runs. Hosted runners are
-      # ephemeral, so this avoids repeatedly downloading Mesa's large .deb files.
-      - name: Cache APT package archives
-        uses: actions/cache@v4
-        with:
-          path: /var/cache/apt/archives/*.deb
-          key: apt-debs-ubuntu-24.04-v1
-          restore-keys: |
-            apt-debs-ubuntu-24.04-
-          save-always: true
-
-      - name: Install headless display and Vulkan runtime
+      - name: Validate assets and log checker in parallel
         shell: bash
         run: |
           set -euo pipefail
+          python scripts/test_assets.py &
+          assets_pid=$!
+          python scripts/check_client_model_bake.py --self-test &
+          checker_pid=$!
+          wait "$assets_pid"
+          wait "$checker_pid"
 
-          packages=(xvfb mesa-vulkan-drivers xdotool)
-          missing=()
-          for package in "${packages[@]}"; do
-            if ! dpkg-query -W -f='${Status}' "$package" 2>/dev/null | grep -q 'install ok installed'; then
-              missing+=("$package")
-            fi
-          done
-
-          if (( ${#missing[@]} > 0 )); then
-            echo "Installing missing runtime packages: ${missing[*]}"
-            sudo apt-get -o Acquire::Retries=3 -o Acquire::Languages=none update
-            sudo apt-get -o Acquire::Retries=3 install -y --no-install-recommends "${missing[@]}"
-          else
-            echo "All headless display and Vulkan packages are already installed."
-          fi
-
+      # Cache downloaded Debian packages between runs. Hosted runners are
+      # ephemeral, so this avoids repeatedly downloading Mesa's large .deb files.
       - name: Smoke-test client resource loading
         shell: bash
         env:
