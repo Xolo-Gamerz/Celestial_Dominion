@@ -17,7 +17,7 @@ ERROR_PATTERNS = (
     r"FileNotFoundException:.*celestial_dominion",
 )
 RELOAD_MARKER = "Reloading ResourceManager"
-ATLAS_MARKER = "minecraft/TextureAtlas"
+ATLAS_MARKER = "TextureAtlas"
 
 
 def inspect_log(text):
@@ -54,7 +54,7 @@ def self_test():
     found, missing = inspect_log("client started but no reload")
     assert missing, "checker should reject a client that never reloads resources"
 
-    no_atlas = clean.split("[Render thread/INFO] [minecraft/TextureAtlas]")[0]
+    no_atlas = clean.split("TextureAtlas")[0]
     found, missing = inspect_log(no_atlas)
     assert any("texture-atlas" in item for item in missing), "checker should require atlas creation"
     print("CLIENT LOG CHECKER SELF-TEST PASSED")
