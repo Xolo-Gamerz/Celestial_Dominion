@@ -13,6 +13,7 @@ import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDamageEvent;
 import net.neoforged.neoforge.event.entity.living.LivingKnockBackEvent;
@@ -27,6 +28,11 @@ public final class GameplayEvents {
     public static void onPlayerTick(PlayerTickEvent.Post event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
+        }
+
+        // Held relic auras are sparse server particles, not a client render loop.
+        if (player.tickCount % 5 == 0) {
+            emitHeldRelicAura(player);
         }
 
         if (player.tickCount % 20 != 0) {
@@ -156,6 +162,52 @@ public final class GameplayEvents {
         if (abyssal || celestial) {
             event.setCanceled(true);
         }
+    }
+
+
+    private static void emitHeldRelicAura(ServerPlayer player) {
+        ServerLevel level = (ServerLevel) player.level();
+        var main = player.getMainHandItem();
+        var off = player.getOffhandItem();
+
+        emitRelicAura(level, player, main, 0.28);
+        emitRelicAura(level, player, off, -0.28);
+    }
+
+    private static void emitRelicAura(ServerLevel level, ServerPlayer player,
+                                      net.minecraft.world.item.ItemStack stack,
+                                      double handSideOffset) {
+        Vec3 look = player.getLookAngle();
+        Vec3 right = new Vec3(-look.z, 0.0, look.x).normalize();
+        double x = player.getX() + look.x * 0.30 + right.x * handSideOffset;
+        double y = player.getY() + 1.15;
+        double z = player.getZ() + look.z * 0.30 + right.z * handSideOffset;
+
+        if (isSolarRelic(stack)) {
+            level.sendParticles(ParticleTypes.FLAME, x, y, z, 2, 0.10, 0.12, 0.10, 0.002);
+        } else if (isAbyssalRelic(stack)) {
+            level.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, x, y, z, 2, 0.10, 0.12, 0.10, 0.002);
+        } else if (isCelestialRelic(stack)) {
+            level.sendParticles(ParticleTypes.END_ROD, x, y, z, 2, 0.10, 0.12, 0.10, 0.002);
+        }
+    }
+
+    private static boolean isSolarRelic(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(ModItems.SOLAR_SWORD.get()) || stack.is(ModItems.SOLAR_PICKAXE.get())
+                || stack.is(ModItems.SOLAR_AXE.get()) || stack.is(ModItems.SOLAR_SHOVEL.get())
+                || stack.is(ModItems.SOLAR_HOE.get()) || stack.is(ModItems.SOLAR_MULTITOOL.get());
+    }
+
+    private static boolean isAbyssalRelic(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(ModItems.ABYSSAL_SWORD.get()) || stack.is(ModItems.ABYSSAL_PICKAXE.get())
+                || stack.is(ModItems.ABYSSAL_AXE.get()) || stack.is(ModItems.ABYSSAL_SHOVEL.get())
+                || stack.is(ModItems.ABYSSAL_HOE.get()) || stack.is(ModItems.ABYSSAL_MULTITOOL.get());
+    }
+
+    private static boolean isCelestialRelic(net.minecraft.world.item.ItemStack stack) {
+        return stack.is(ModItems.CELESTIAL_SWORD.get()) || stack.is(ModItems.CELESTIAL_PICKAXE.get())
+                || stack.is(ModItems.CELESTIAL_AXE.get()) || stack.is(ModItems.CELESTIAL_SHOVEL.get())
+                || stack.is(ModItems.CELESTIAL_HOE.get()) || stack.is(ModItems.CELESTIAL_MULTITOOL.get());
     }
 
     private static void updateCelestialFlight(ServerPlayer player, boolean wearingCelestial) {

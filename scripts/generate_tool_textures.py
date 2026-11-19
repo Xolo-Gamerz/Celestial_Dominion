@@ -133,6 +133,39 @@ def main():
             metadata = {"animation": {"width": 64, "height": 64, "frametime": 3, "interpolate": False}}
             (ROOT / f"{filename}.mcmeta").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
 
+        # Native spear jab/charge animations are retained; this sprite stays static.
+        spear = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+        sd = ImageDraw.Draw(spear)
+        o, d, m, h, g, w = (PALETTES[material][k] for k in ("outline", "dark", "metal", "light", "gold", "shine"))
+        line(sd, [(13,58),(49,13)], o, 10)
+        line(sd, [(14,57),(48,14)], d, 7)
+        line(sd, [(15,55),(47,15)], m, 3)
+        line(sd, [(16,54),(46,16)], h, 1)
+        for i in range(4):
+            x, y = 17 + i * 4, 53 - i * 5
+            line(sd, [(x-3,y+3),(x+2,y-2)], g, 2)
+        poly(sd, [(8,56),(14,52),(19,57),(16,63),(10,62)], m, o, 2)
+        poly(sd, [(40,20),(47,10),(53,12),(46,24)], d, o, 2)
+        if material == "solar":
+            poly(sd, [(49,2),(62,8),(57,17),(49,25),(43,17)], m, o, 3)
+            poly(sd, [(50,4),(58,9),(54,16),(49,21),(46,16)], h, g)
+            poly(sd, [(47,14),(39,10),(43,19),(49,20)], g, o)
+            poly(sd, [(55,15),(61,19),(54,18)], h, g)
+        elif material == "abyssal":
+            poly(sd, [(50,2),(62,8),(57,17),(50,24),(44,17),(47,9)], d, o, 3)
+            poly(sd, [(51,4),(59,9),(55,16),(50,21),(47,16)], g, h)
+            poly(sd, [(47,14),(40,8),(43,19)], m, o)
+            line(sd, [(50,21),(44,26)], g, 2)
+        else:
+            poly(sd, [(52,2),(61,8),(56,17),(51,24),(45,17),(48,8)], m, o, 3)
+            poly(sd, [(52,4),(58,9),(55,16),(51,21),(48,16)], h, g)
+            poly(sd, [(52,5),(56,9),(52,14),(49,9)], w, g)
+            poly(sd, [(48,14),(41,12),(45,20)], g, o)
+        spear.save(ROOT / f"{material}_spear.png", optimize=True)
+        spear_meta = ROOT / f"{material}_spear.png.mcmeta"
+        if spear_meta.exists():
+            spear_meta.unlink()
+
 
 if __name__ == "__main__":
     main()

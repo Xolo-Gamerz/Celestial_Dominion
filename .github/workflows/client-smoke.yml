@@ -1,0 +1,108 @@
+name: Client Smoke Test
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: client-smoke-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  client-smoke:
+    runs-on: ubuntu-24.04
+    container:
+      image: ghcr.io/xolo-gamerz/celestial-dominion-ci:ubuntu24.04
+      options: --shm-size=2g
+    timeout-minutes: 12
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          gradle-home-cache-includes: |
+            caches
+            notifications
+            jdks
+          # Fork PRs stay read-only. Same-repository PRs can populate their
+          # isolated merge-ref cache for subsequent runs of this PR.
+          cache-read-only: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork }}
+
+      - name: Cache Minecraft client assets
+        uses: actions/cache@v4
+        with:
+          path: run/assets
+          key: minecraft-assets-${{ runner.os }}-${{ hashFiles('gradle.properties') }}
+
+      - name: Generate assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          # These generators both write sword/catalyst resources; keep generation
+          # serialized to avoid nondeterministic overwrites.
+
+          python scripts/generate_textures.py
+          python scripts/generate_relic_assets.py
+
+      - name: Validate assets and log checker in parallel
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/test_assets.py &
+          assets_pid=$!
+          python scripts/check_client_model_bake.py --self-test &
+          checker_pid=$!
+          wait "$assets_pid"
+          wait "$checker_pid"
+
+      # Cache downloaded Debian packages between runs. Hosted runners are
+      # ephemeral, so this avoids repeatedly downloading Mesa's large .deb files.
+      - name: Smoke-test client resource loading
+        shell: bash
+        env:
+          SDL_VIDEO_DRIVER: x11
+          ALSOFT_DRIVERS: 'null'
+        run: |
+          set -euo pipefail
+          VK_ICD_FILENAMES="$(find /usr/share/vulkan/icd.d /etc/vulkan/icd.d \
+            -maxdepth 1 -type f \( -iname '*lvp*.json' -o -iname '*lavapipe*.json' \) \
+            -print -quit 2>/dev/null || true)"
+          if [ -z "$VK_ICD_FILENAMES" ]; then
+            echo "::error::Lavapipe Vulkan ICD missing"
+            find /usr/share/vulkan/icd.d /etc/vulkan/icd.d -maxdepth 1 -type f -print 2>/dev/null || true
+            exit 1
+          fi
+          export VK_ICD_FILENAMES
+
+          mkdir -p run/config
+          OPTIONS=run/options.txt
+          touch "$OPTIONS"
+          if grep -q '^narrator:' "$OPTIONS"; then
+            sed -i 's/^narrator:.*/narrator:0/' "$OPTIONS"
+          else
+            printf '\nnarrator:0\n' >> "$OPTIONS"
+          fi
+
+          # Keep the smoke-test controller inside xvfb-run. That gives both
+          # Minecraft and xdotool the same DISPLAY; otherwise window discovery
+          # runs outside the virtual X server and can never find the client.
+          xvfb-run -a -s "-screen 0 854x480x24 +extension GLX +render" \
+            bash scripts/run_client_smoke.sh
+
+      - name: Upload client logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: celestial-dominion-client-logs
+          path: |
+            run/logs/latest.log
+            ${{ runner.temp }}/client-smoke.log
+          if-no-files-found: warn
+          retention-days: 14

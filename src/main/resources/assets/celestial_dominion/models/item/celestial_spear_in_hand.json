@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/netherite_spear_in_hand",
+  "textures": {
+    "layer0": "celestial_dominion:item/celestial_spear"
+  }
+}

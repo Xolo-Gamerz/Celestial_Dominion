@@ -7,6 +7,7 @@ this script, so the GitHub Actions workflow and local runs produce identical fil
 from pathlib import Path
 from PIL import Image, ImageDraw
 import random
+import json
 
 ROOT = Path(__file__).resolve().parents[1] / "src/main/resources/assets/celestial_dominion"
 
@@ -218,57 +219,182 @@ def make_ore_block(material):
     return im
 
 
-def make_armor_atlas(material, layer):
+def make_wings(material, frame=0):
+    """64x32 texture for the built-in humanoid WingsLayer (elytra geometry)."""
     p = PALETTES[material]
-    im = Image.new("RGBA", (64, 32), p["shadow"])
+    im = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
-    # Fine plate grain, bevels and seams across the 64x32 humanoid UV atlas.
-    for x in range(0, 64, 8):
-        d.rectangle((x, 0, min(63, x+7), 31), fill=p["base"] if (x//8)%2 == 0 else p["shadow"])
-        d.line((x, 0, x, 31), fill=p["mid"], width=1)
-    for y in range(0, 32, 8):
-        d.line((0, y, 63, y), fill=p["mid"], width=1)
-    # Armor plates, distinct panel treatment for each UV texture family.
-    if layer == "humanoid_leggings":
-        d.rectangle((2, 2, 61, 29), fill=p["base"], outline=p["shine"])
-        d.rectangle((5, 4, 58, 8), fill=p["mid"], outline=p["accent"])
-        d.line((16, 9, 16, 28), fill=p["accent"], width=2)
-        d.line((31, 9, 31, 28), fill=p["shine"], width=1)
-        d.line((47, 9, 47, 28), fill=p["accent"], width=2)
-        for x in (8, 24, 40, 56):
-            d.rectangle((x-2, 13, x+2, 20), fill=p["mid"], outline=p["shine"])
-    elif layer == "humanoid_baby":
-        d.rectangle((1, 1, 62, 30), fill=p["base"], outline=p["shine"])
-        d.rectangle((4, 4, 59, 27), fill=p["mid"], outline=p["accent"])
-        d.line((4, 5, 59, 26), fill=p["shine"], width=1)
-        d.line((59, 5, 4, 26), fill=p["accent"], width=1)
+    outline, base, mid, accent, shine, white = (
+        p[k] for k in ("shadow", "base", "mid", "accent", "shine", "white")
+    )
+    # Two swept feather/energy vanes around the center hinge.
+    d.polygon([(30, 2), (24, 4), (15, 7), (4, 15), (2, 24), (10, 27),
+               (19, 23), (27, 17), (31, 13)], fill=base, outline=shine)
+    d.polygon([(34, 2), (40, 4), (49, 7), (60, 15), (62, 24), (54, 27),
+               (45, 23), (37, 17), (33, 13)], fill=base, outline=shine)
+    d.polygon([(29, 5), (22, 8), (12, 14), (7, 21), (14, 22),
+               (23, 17), (30, 11)], fill=mid, outline=accent)
+    d.polygon([(35, 5), (42, 8), (52, 14), (57, 21), (50, 22),
+               (41, 17), (34, 11)], fill=mid, outline=accent)
+    # Raised vane ridges and luminous edge seams.
+    d.line((29, 7, 21, 12, 12, 19, 6, 22), fill=shine, width=2)
+    d.line((35, 7, 43, 12, 52, 19, 58, 22), fill=shine, width=2)
+    d.line((28, 11, 20, 18, 14, 23), fill=accent, width=2)
+    d.line((36, 11, 44, 18, 50, 23), fill=accent, width=2)
+    d.polygon([(29, 1), (35, 1), (37, 8), (32, 15), (27, 8)],
+              fill=accent, outline=white)
+    d.rectangle((30, 4, 33, 10), fill=white)
+    # Material signature.
+    if material == "solar":
+        shift = frame % 4
+        for x in (7, 14, 21, 43, 50, 57):
+            d.line((x, 18-shift, x+2, 13-shift), fill=shine, width=2)
+            d.point((x+2, 12-shift), fill=white)
+    elif material == "abyssal":
+        pulse = frame % 3
+        for x in (8, 17, 24, 40, 47, 56):
+            d.ellipse((x-1-pulse, 15-pulse, x+2+pulse, 18+pulse), fill=accent, outline=white)
+        d.line((8, 25, 20, 20-pulse, 28, 15), fill=white, width=1)
+        d.line((56, 25, 44, 20-pulse, 36, 15), fill=white, width=1)
     else:
-        d.rectangle((1, 1, 62, 30), fill=p["base"], outline=p["shine"])
-        d.rectangle((4, 4, 59, 27), fill=p["mid"], outline=p["accent"])
-        d.line((4, 8, 59, 8), fill=p["shine"], width=1)
-        d.line((4, 23, 59, 23), fill=p["shadow"], width=2)
-        for x in (8, 24, 40, 56):
-            d.rectangle((x-2, 11, x+2, 20), fill=p["base"], outline=p["shine"])
-    # Set-specific insignia: sunburst, abyssal eye, or eight-point star.
-    for cx in (12, 32, 52):
-        cy = 16
-        if material == "solar":
-            d.ellipse((cx-3, cy-3, cx+3, cy+3), fill=p["accent"], outline=p["white"])
-            d.line((cx, cy-6, cx, cy+6), fill=p["shine"])
-            d.line((cx-6, cy, cx+6, cy), fill=p["shine"])
-        elif material == "abyssal":
-            d.ellipse((cx-5, cy-3, cx+5, cy+3), fill=p["shadow"], outline=p["accent"])
-            d.ellipse((cx-1, cy-2, cx+1, cy+2), fill=p["shine"])
-        else:
-            d.polygon([(cx,cy-6),(cx+2,cy-2),(cx+6,cy),(cx+2,cy+2),(cx,cy+6),(cx-2,cy+2),(cx-6,cy),(cx-2,cy-2)],
-                      fill=p["accent"], outline=p["white"])
-    # Sparse glints keep the 64x32 map readable in motion.
-    rng = random.Random(800 + list(MATERIALS).index(material)*13 + len(layer))
-    for _ in range(34):
-        x, y = rng.randrange(64), rng.randrange(32)
-        d.point((x, y), fill=p["shine"] if rng.random() < .5 else p["mid"])
+        for i, (x, y) in enumerate(((8, 17), (18, 12), (24, 19), (56, 17), (46, 12), (40, 19))):
+            shift = (frame + i) % 3 - 1
+            d.line((x-2, y+shift, x+2, y+shift), fill=white, width=1)
+            d.line((x, y-2+shift, x, y+2+shift), fill=accent, width=1)
     return im
 
+
+def make_armor_overlay(material, layer):
+    """Transparent trim placed only on real humanoid armor UV islands."""
+    p = PALETTES[material]
+    im = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    bright = (*p["shine"][:3], 245)
+    accent = (*p["accent"][:3], 235)
+    white = (*p["white"][:3], 255)
+
+    def seam(points, color=bright):
+        d.line(points, fill=color, width=1)
+
+    def diamond(cx, cy, color=accent):
+        d.polygon([(cx, cy-2), (cx+2, cy), (cx, cy+2), (cx-2, cy)], fill=color)
+
+    if layer == "humanoid_leggings":
+        # Front-facing leg panels and small knee/ankle details.
+        for x in (4, 20):
+            seam((x, 22, x, 29), accent)
+            seam((x+3, 22, x+3, 29), bright)
+            diamond(x+2, 24, white)
+            seam((x-1, 30, x+4, 30), bright)
+        return im
+
+    # Helmet front face (8,8)-(15,15): crest is deliberately tiny.
+    if material == "solar":
+        diamond(12, 11, white)
+        seam((12, 8, 12, 10), bright)
+        seam((9, 11, 11, 11), accent)
+        seam((13, 11, 15, 11), accent)
+    elif material == "abyssal":
+        d.ellipse((10, 10, 14, 13), outline=accent, width=1)
+        d.point((12, 11), fill=white)
+    else:
+        diamond(12, 11, white)
+        d.point((10, 13), fill=accent)
+        d.point((14, 9), fill=accent)
+
+    # Chest insignia on the front torso UV (20,20)-(27,31).
+    if material == "solar":
+        d.ellipse((22, 23, 25, 26), outline=white, width=1)
+        seam((23, 21, 23, 28), bright)
+        seam((20, 24, 27, 24), accent)
+    elif material == "abyssal":
+        d.ellipse((21, 24, 26, 27), outline=accent, width=1)
+        d.ellipse((23, 24, 24, 26), fill=white)
+    else:
+        diamond(23, 25, white)
+        seam((21, 23, 25, 27), accent)
+        seam((25, 23, 21, 27), accent)
+
+    # Repeated, restrained trim on arm and leg faces, not across unused UVs.
+    for x in (42, 46, 50, 54):
+        seam((x, 23, x, 28), accent)
+        d.point((x, 29), fill=white)
+    for x in (4, 8, 12):
+        seam((x, 23, x, 28), bright if material == "celestial" else accent)
+    return im
+
+
+def make_armor_atlas(material, layer):
+    """Paint original pixel-art plates into Minecraft's 64x32 armor UV net."""
+    p = PALETTES[material]
+    im = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    outline, base, mid, accent, shine, white = (
+        p[k] for k in ("shadow", "base", "mid", "accent", "shine", "white")
+    )
+
+    def face_box(rect, fill, edge=outline):
+        d.rectangle(rect, fill=fill, outline=edge)
+
+    def panel(rect, inset=1):
+        x0, y0, x1, y1 = rect
+        face_box(rect, base)
+        if x1 - x0 > 3 and y1 - y0 > 3:
+            d.rectangle((x0+inset, y0+inset, x1-inset, y1-inset),
+                        fill=mid, outline=accent)
+        d.line((x0+1, y0+1, x1-1, y0+1), fill=shine)
+
+    if layer == "humanoid_leggings":
+        # Layer 2 is two leg cuboids: 4x12 side/front/back faces plus caps.
+        for x in (0, 16):
+            panel((x+4, 16, x+7, 19), 0)
+            panel((x+8, 16, x+11, 19), 0)
+            for face_x in (x, x+4, x+8, x+12):
+                panel((face_x, 20, face_x+3, 31))
+            # Knee plate and boot cuff sit on the front face.
+            d.rectangle((x+4, 22, x+7, 25), fill=base, outline=shine)
+            d.line((x+4, 28, x+7, 28), fill=accent, width=1)
+            d.point((x+5, 23), fill=white)
+        return im
+
+    # Helmet: two 8x8 caps and four 8x8 side faces.
+    panel((8, 0, 15, 7))
+    panel((16, 0, 23, 7))
+    for x in (0, 8, 16, 24):
+        panel((x, 8, x+7, 15))
+    # Front visor/face plate.
+    d.rectangle((9, 11, 14, 13), fill=outline, outline=accent)
+    d.point((10, 12), fill=white)
+    d.point((13, 12), fill=white)
+
+    # Torso: caps and four wrapped 8x12 / 4x12 body faces.
+    panel((20, 16, 27, 19), 0)
+    panel((28, 16, 35, 19), 0)
+    for rect in ((16, 20, 19, 31), (20, 20, 27, 31),
+                 (28, 20, 31, 31), (32, 20, 39, 31)):
+        panel(rect)
+    # Chest plate silhouette and central material emblem.
+    d.polygon([(21, 21), (26, 21), (27, 25), (24, 30),
+               (20, 25)], fill=base, outline=shine)
+    if material == "solar":
+        d.ellipse((22, 23, 25, 26), fill=accent, outline=white)
+        d.point((23, 24), fill=white)
+    elif material == "abyssal":
+        d.ellipse((21, 24, 26, 27), fill=outline, outline=accent)
+        d.point((23, 25), fill=white)
+    else:
+        d.polygon([(23, 22), (25, 25), (23, 28), (21, 25)],
+                  fill=accent, outline=white)
+
+    # Arm cuboid faces; cuff and seam details remain aligned to the UV net.
+    panel((44, 16, 47, 19), 0)
+    panel((48, 16, 51, 19), 0)
+    for rect in ((40, 20, 43, 31), (44, 20, 47, 31),
+                 (48, 20, 51, 31), (52, 20, 55, 31)):
+        panel(rect)
+    d.rectangle((44, 28, 47, 30), fill=accent, outline=shine)
+    d.rectangle((4, 28, 7, 30), fill=accent, outline=shine)
+    return im
 
 def main():
     (ROOT / "textures/item").mkdir(parents=True, exist_ok=True)
@@ -282,10 +408,37 @@ def main():
         if material != "celestial":
             make_template(material).save(ROOT / "textures/item" / f"{material}_smithing_template.png")
         make_ore_block(material).save(ROOT / "textures/block" / f"{material}_ore.png")
+        wings = ROOT / "textures/entity/equipment/wings" / f"{material}.png"
+        wings.parent.mkdir(parents=True, exist_ok=True)
+        wing_sheet = Image.new("RGBA", (64, 32 * 8), (0, 0, 0, 0))
+        for frame in range(8):
+            wing_sheet.paste(make_wings(material, frame), (0, frame * 32))
+        wing_sheet.save(wings)
+        (wings.parent / f"{material}.png.mcmeta").write_text(
+            json.dumps({"animation": {"width": 64, "height": 32, "frametime": 4}}, indent=2) + "\n",
+            encoding="utf-8",
+        )
         for layer in ("humanoid", "humanoid_leggings", "humanoid_baby"):
             out = ROOT / "textures/entity/equipment" / layer / f"{material}.png"
             out.parent.mkdir(parents=True, exist_ok=True)
-            make_armor_atlas(material, layer).save(out)
+            atlas = make_armor_atlas(material, layer)
+            if layer == "humanoid_baby":
+                # 26.1+ uses a dedicated 64x64 baby-humanoid equipment atlas.
+                # Preserve the UV art in the upper atlas and mirror its mapped
+                # surfaces into the lower half instead of stretching the UVs.
+                baby = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+                baby.paste(atlas, (0, 0))
+                baby.paste(atlas, (0, 32))
+                atlas = baby
+            atlas.save(out)
+            overlay = make_armor_overlay(material, layer)
+            if layer == "humanoid_baby":
+                baby_overlay = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+                baby_overlay.paste(overlay, (0, 0))
+                baby_overlay.paste(overlay, (0, 32))
+                overlay = baby_overlay
+            overlay_path = ROOT / "textures/entity/equipment" / layer / f"{material}_ornament.png"
+            overlay.save(overlay_path)
     make_catalyst().save(ROOT / "textures/item" / "celestial_catalyst.png")
 
 

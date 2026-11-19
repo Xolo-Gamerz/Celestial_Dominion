@@ -47,7 +47,7 @@ You can also verify that the blocks themselves exist independently of world gene
 5. Find Celestial Ore in the End and refine it into Celestial Ingots.
 6. Craft the Celestial Catalyst. Use the Abyssal piece as the smithing template, the matching Solar piece as the base, and the Catalyst as the addition to ascend that piece to Celestial gear.
 
-The Celestial sword follows the same final-stage smithing progression as the armor.
+The Celestial sword and spear follow the same final-stage smithing progression as the armor. Solar and Abyssal spears are upgraded from Netherite Spears with their matching smithing templates and ingots; the Celestial Spear is forged by combining the Solar Spear, Abyssal Spear template, and Celestial Catalyst.
 
 ## Set blessings
 
@@ -73,4 +73,5 @@ Wear all four Celestial pieces to combine the Solar and Abyssal blessings and ga
 
 - Armor and sword abilities are server-side gameplay effects; they do not require shaders.
 - The custom armor textures are 64x32 atlases for the humanoid, leggings, and baby-humanoid equipment layers. Item icons are separate 32x32 sprites.
+- Solar and Abyssal armor/tool durability is substantially increased over the previous release. Celestial armor, swords, tools, multitool and spear carry Minecraft's native Unbreakable component.
 - The Celestial set is intentionally the final, extremely powerful tier. It is not balanced as a PvP equipment set.
