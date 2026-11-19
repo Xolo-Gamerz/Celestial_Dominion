@@ -51,9 +51,6 @@ jobs:
           python scripts/test_assets.py
           python scripts/check_client_model_bake.py --self-test
 
-      - name: Build mod
-        run: ./gradlew build --console=plain -Pneogradle.subsystems.decompiler.enabled=false
-
       - name: Install headless Vulkan runtime
         run: |
           sudo apt-get -o Acquire::Retries=3 update
