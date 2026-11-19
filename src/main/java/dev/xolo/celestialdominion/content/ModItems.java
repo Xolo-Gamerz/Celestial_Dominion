@@ -19,6 +19,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.item.component.AttackRange;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.equipment.ArmorMaterial;
 import net.minecraft.world.item.equipment.ArmorType;
@@ -132,11 +133,14 @@ public final class ModItems {
 
     // Native Minecraft spear behaviour: jab, charge, reach and vanilla spear animations.
     public static final DeferredItem<Item> SOLAR_SPEAR = ITEMS.registerItem("solar_spear",
-            p -> new Item(p.spear(SOLAR_TOOL, 0.90F, 1.15F, 0.45F, 2.5F, 8.5F, 5.0F, 5.1F, 8.75F, 4.6F).fireResistant()));
+            p -> new Item(p.spear(SOLAR_TOOL, 0.90F, 1.15F, 0.45F, 2.5F, 8.5F, 5.0F, 5.1F, 8.75F, 4.6F)
+                    .component(DataComponents.ATTACK_RANGE, new AttackRange(2.0F, 5.25F, 2.0F, 7.25F, 0.3F, 1.0F)).fireResistant()));
     public static final DeferredItem<Item> ABYSSAL_SPEAR = ITEMS.registerItem("abyssal_spear",
-            p -> new Item(p.spear(ABYSSAL_TOOL, 1.00F, 1.20F, 0.42F, 2.5F, 8.5F, 5.0F, 5.1F, 8.75F, 4.6F).fireResistant()));
+            p -> new Item(p.spear(ABYSSAL_TOOL, 1.00F, 1.20F, 0.42F, 2.5F, 8.5F, 5.0F, 5.1F, 8.75F, 4.6F)
+                    .component(DataComponents.ATTACK_RANGE, new AttackRange(2.0F, 5.25F, 2.0F, 7.25F, 0.3F, 1.0F)).fireResistant()));
     public static final DeferredItem<Item> CELESTIAL_SPEAR = ITEMS.registerItem("celestial_spear",
-            p -> new Item(unbreakable(p.spear(CELESTIAL_TOOL, 0.80F, 1.30F, 0.40F, 2.5F, 8.5F, 5.0F, 5.1F, 8.75F, 4.6F)).fireResistant()));
+            p -> new Item(unbreakable(p.spear(CELESTIAL_TOOL, 0.80F, 1.30F, 0.40F, 2.5F, 8.5F, 5.0F, 5.1F, 8.75F, 4.6F)
+                    .component(DataComponents.ATTACK_RANGE, new AttackRange(2.0F, 5.25F, 2.0F, 7.25F, 0.3F, 1.0F))).fireResistant()));
 
     public static final DeferredItem<Item> SOLAR_MULTITOOL = ITEMS.registerItem("solar_multitool",
             p -> new CelestialMultitoolItem(multitoolProperties(p, SOLAR_MINING_TOOL, 1.0F, -2.7F)));
