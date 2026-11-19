@@ -127,6 +127,23 @@ def main():
             if not recipe or recipe.get("type") != "minecraft:smithing_transform":
                 fail(f"missing smithing recipe: {material}_{kind}")
 
+    # Tiered spears use the native 26.3 spear item behaviour and their own sprites.
+    for material in materials:
+        name = f"{material}_spear"
+        model_path = ASSETS / "models/item" / f"{name}.json"
+        item_path = ASSETS / "items" / f"{name}.json"
+        texture_path = ASSETS / "textures/item" / f"{name}.png"
+        model = read_json(model_path) if model_path.exists() else None
+        item = read_json(item_path) if item_path.exists() else None
+        if not model or model.get("parent") != "minecraft:item/generated":
+            fail(f"{name}: spear must use the generated vanilla spear sprite model")
+        if not item or item.get("model", {}).get("model") != f"celestial_dominion:item/{name}":
+            fail(f"{name}: client item does not point to its spear model")
+        check_png(texture_path, (64, 64))
+        recipe = read_json(recipes / f"{name}.json")
+        if not recipe or recipe.get("type") != "minecraft:smithing_transform":
+            fail(f"missing smithing recipe: {name}")
+
     # Static balance regression checks: Solar is the damage path, Abyssal
     # is the durability/defence path, and Celestial is the final fusion.
     java_items = ROOT.parent / "java/dev/xolo/celestialdominion/content/ModItems.java"
@@ -220,6 +237,16 @@ def main():
             fail("Abyssal tools must retain Netherite harvest capability")
         if harvest_tag("CELESTIAL_MINING_TOOL") != "INCORRECT_FOR_CELESTIAL_TOOL":
             fail("Celestial tools must use the custom final harvest tier")
+
+    # Final-tier gear must carry the real UNBREAKABLE component; base tiers must
+    # retain increasing but finite durability values.
+    if "DataComponents.UNBREAKABLE" not in source or "Unit.INSTANCE" not in source:
+        fail("Celestial gear must use the native UNBREAKABLE item component")
+    for expected in ("armor(\"solar\", 320", "armor(\"abyssal\", 480",
+                     "ToolMaterial SOLAR_TOOL = new ToolMaterial(",
+                     "ToolMaterial ABYSSAL_TOOL = new ToolMaterial("):
+        if expected not in source:
+            fail(f"missing durability progression declaration: {expected}")
 
     # Particle bursts are deliberately capped to avoid the old 300+ particle
     # ability spikes. This is a static guard; client FPS still needs a playtest.
