@@ -1,0 +1,24 @@
+FROM ubuntu:24.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends \
+      ca-certificates curl gnupg xvfb mesa-vulkan-drivers xdotool \
+      libflite1 python3 python-is-python3 python3-pil \
+ && install -d -m 0755 /etc/apt/keyrings \
+ && curl -fsSL https://packages.adoptium.net/artifactory/api/gpg/key/public \
+      | gpg --dearmor -o /etc/apt/keyrings/adoptium.gpg \
+ && chmod a+r /etc/apt/keyrings/adoptium.gpg \
+ && echo "deb [signed-by=/etc/apt/keyrings/adoptium.gpg] https://packages.adoptium.net/artifactory/deb noble main" \
+      > /etc/apt/sources.list.d/adoptium.list \
+ && apt-get update \
+ && apt-get install -y --no-install-recommends temurin-25-jdk \
+ && apt-get clean \
+ && rm -rf /var/lib/apt/lists/*
+
+ENV JAVA_HOME=/usr/lib/jvm/temurin-25-jdk-amd64
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
+ENV SDL_VIDEODRIVER=x11
+ENV ALSOFT_DRIVERS=null
+ENV LIBGL_ALWAYS_SOFTWARE=1
+ENV GALLIUM_DRIVER=llvmpipe
