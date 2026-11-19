@@ -31,7 +31,7 @@ def inspect_log(text):
     missing = []
     if RELOAD_MARKER not in text:
         missing.append("client never began a resource reload")
-    if not re.search(r"minecraft/TextureAtlas.*Created:", text):
+    if not re.search(r"TextureAtlas.*Created:", text):
         missing.append("client never logged texture-atlas creation after resource reload")
     return found, missing
 
@@ -40,7 +40,7 @@ def self_test():
     clean = (
         "[Render thread/INFO] [minecraft/ReloadableResourceManager]: "
         "Reloading ResourceManager: vanilla, mod/celestial_dominion\n"
-        "[Render thread/INFO] [minecraft/TextureAtlas]: Created: "
+        "[Render thread/INFO] [net.minecraft.client.renderer.texture.TextureAtlas/]: Created: "
         "512x512x0 minecraft:textures/atlas/blocks.png-atlas\n"
     )
     found, missing = inspect_log(clean)
