@@ -203,7 +203,7 @@ def flat_model(item_id, handheld):
     # A thick, pixel-art extrusion: the transparent silhouette stays crisp in
     # the GUI while the item has visible physical depth in first/third person.
     return {
-        "textures": {"layer0": texture},
+        "textures": {"layer0": texture, "particle": texture},
         "elements": [{
             "from": [1, 1, 7],
             "to": [15, 15, 9],
