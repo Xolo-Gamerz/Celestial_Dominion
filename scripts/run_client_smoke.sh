@@ -68,12 +68,12 @@ echo "JVMs visible to jcmd:"
 printf '%s\n' "$JVM_LIST"
 mapfile -t CLIENT_PIDS < <(
   printf '%s\n' "$JVM_LIST" |
-    awk 'NF >= 2 && $2 !~ /GradleDaemon|GradleWrapperMain|sun\.tools\.jcmd\.JCmd/ { print $1 }'
+    awk '$0 ~ /minecraft-patched|net\.neoforged\.devlaunch\.Main|clientRunVmArgs/ { print $1 }'
 )
 [ "${#CLIENT_PIDS[@]}" -eq 1 ] || {
   echo "Java process table:"
   ps -eo pid,ppid,args | grep -E '[j]ava|[g]radle' || true
-  fail "Expected exactly one non-Gradle client JVM from jcmd -l; found ${#CLIENT_PIDS[@]}."
+  fail "Expected exactly one NeoForge client JVM from jcmd -l; found ${#CLIENT_PIDS[@]}."
 }
 CLIENT_PID="${CLIENT_PIDS[0]}"
 echo "Requesting graceful JVM shutdown for client PID $CLIENT_PID after successful resource validation."
