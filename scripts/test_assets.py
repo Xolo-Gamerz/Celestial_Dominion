@@ -58,6 +58,8 @@ def main():
                     fail(f"{name}: relic tool must use an extruded 3D item model")
                 if model.get("parent"):
                     fail(f"{name}: custom 3D relic model must not inherit a flat vanilla parent")
+                if model.get("textures", {}).get("particle") != f"celestial_dominion:item/{name}":
+                    fail(f"{name}: extruded 3D model must define its particle texture")
                 display = model.get("display", {})
                 for context in ("firstperson_righthand", "thirdperson_righthand"):
                     if display.get(context, {}).get("scale", [0, 0, 0])[0] < 1.1:
