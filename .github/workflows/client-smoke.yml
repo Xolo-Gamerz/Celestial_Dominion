@@ -39,6 +39,7 @@ jobs:
           key: minecraft-assets-${{ runner.os }}-${{ hashFiles('gradle.properties') }}
 
       - name: Generate assets
+        shell: bash
         run: |
           set -euo pipefail
           # These generators both write sword/catalyst resources; keep generation
