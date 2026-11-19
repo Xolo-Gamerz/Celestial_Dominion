@@ -121,7 +121,7 @@ jobs:
           last_atlas_count=0
           stable_samples=0
           while (( SECONDS < atlas_deadline )); do
-            atlas_count="$(grep -c "minecraft/TextureAtlas.*Created:" "$LOG" 2>/dev/null || true)"
+            atlas_count="$(grep -c "TextureAtlas.*Created:" "$LOG" 2>/dev/null || true)"
             if (( atlas_count > 0 )); then
               if [ "$atlas_count" = "$last_atlas_count" ]; then
                 stable_samples=$((stable_samples + 1))
