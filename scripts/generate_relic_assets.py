@@ -193,9 +193,50 @@ def make_tool_sprite(material, kind):
 
 
 def flat_model(item_id, handheld):
+    texture = f"celestial_dominion:item/{item_id}"
+    if not handheld:
+        return {
+            "parent": "minecraft:item/generated",
+            "textures": {"layer0": texture},
+        }
+
+    # A thick, pixel-art extrusion: the transparent silhouette stays crisp in
+    # the GUI while the item has visible physical depth in first/third person.
     return {
-        "parent": "minecraft:item/handheld" if handheld else "minecraft:item/generated",
-        "textures": {"layer0": f"celestial_dominion:item/{item_id}"},
+        "textures": {"layer0": texture},
+        "elements": [{
+            "from": [1, 1, 7],
+            "to": [15, 15, 9],
+            "faces": {
+                "north": {"uv": [0, 0, 16, 16], "texture": "#layer0"},
+                "south": {"uv": [0, 0, 16, 16], "texture": "#layer0"},
+                "east": {"uv": [0, 0, 16, 16], "texture": "#layer0"},
+                "west": {"uv": [0, 0, 16, 16], "texture": "#layer0"},
+                "up": {"uv": [0, 0, 16, 16], "texture": "#layer0"},
+                "down": {"uv": [0, 0, 16, 16], "texture": "#layer0"},
+            },
+        }],
+        "display": {
+            "thirdperson_righthand": {
+                "rotation": [0, -90, 55], "translation": [0, 4, 1],
+                "scale": [1.12, 1.12, 1.12],
+            },
+            "thirdperson_lefthand": {
+                "rotation": [0, 90, -55], "translation": [0, 4, 1],
+                "scale": [1.12, 1.12, 1.12],
+            },
+            "firstperson_righthand": {
+                "rotation": [0, -90, 25], "translation": [1.13, 3.2, 1.13],
+                "scale": [1.18, 1.18, 1.18],
+            },
+            "firstperson_lefthand": {
+                "rotation": [0, 90, -25], "translation": [1.13, 3.2, 1.13],
+                "scale": [1.18, 1.18, 1.18],
+            },
+            "gui": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+            "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.65, 0.65, 0.65]},
+            "fixed": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [0.8, 0.8, 0.8]},
+        },
     }
 
 
