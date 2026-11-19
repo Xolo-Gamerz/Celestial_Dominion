@@ -60,11 +60,24 @@ python scripts/check_client_model_bake.py "$LOG" || fail "Client resource/model 
 # Xvfb is intentionally run without a window manager, so Alt+F4 has no WM to
 # handle it. Ask the running JVM to exit through the JDK attach mechanism;
 # this executes normal JVM shutdown hooks and lets Gradle finish runClient.
-mapfile -t CLIENT_PIDS < <(pgrep -f 'net\.minecraft\.client\.main\.Main' || true)
-[ "${#CLIENT_PIDS[@]}" -eq 1 ] || fail "Expected exactly one Minecraft client JVM; found ${#CLIENT_PIDS[@]}."
+# NeoForge's actual client main class is launcher/version dependent, so do
+# not identify it by a hard-coded net.minecraft main-class command-line match.
+# jcmd reports the main class for every attach-visible JVM in this container.
+JVM_LIST="$(jcmd -l 2>&1)" || fail "Could not enumerate JVMs with jcmd: $JVM_LIST"
+echo "JVMs visible to jcmd:"
+printf '%s\n' "$JVM_LIST"
+mapfile -t CLIENT_PIDS < <(
+  printf '%s\n' "$JVM_LIST" |
+    awk 'NF >= 2 && $2 !~ /GradleDaemon|GradleWrapperMain|sun\.tools\.jcmd\.JCmd/ { print $1 }'
+)
+[ "${#CLIENT_PIDS[@]}" -eq 1 ] || {
+  echo "Java process table:"
+  ps -eo pid,ppid,args | grep -E '[j]ava|[g]radle' || true
+  fail "Expected exactly one non-Gradle client JVM from jcmd -l; found ${#CLIENT_PIDS[@]}."
+}
 CLIENT_PID="${CLIENT_PIDS[0]}"
-echo "Requesting graceful JVM shutdown for Minecraft PID $CLIENT_PID after successful resource validation."
-jcmd "$CLIENT_PID" VM.exit || fail "Could not request Minecraft JVM shutdown through jcmd."
+echo "Requesting graceful JVM shutdown for client PID $CLIENT_PID after successful resource validation."
+jcmd "$CLIENT_PID" VM.exit || fail "Could not request client JVM shutdown through jcmd."
 
 set +e
 for _ in $(seq 1 30); do
