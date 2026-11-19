@@ -87,7 +87,7 @@ jobs:
         shell: bash
         env:
           SDL_VIDEO_DRIVER: x11
-          ALSOFT_DRIVERS: null
+          ALSOFT_DRIVERS: 'null'
         run: |
           set -euo pipefail
           VK_ICD_FILENAMES="$(find /usr/share/vulkan/icd.d /etc/vulkan/icd.d \
