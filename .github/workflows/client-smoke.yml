@@ -57,9 +57,10 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /var/cache/apt/archives/*.deb
-          key: apt-debs-ubuntu-24.04-${{ hashFiles('.github/workflows/client-smoke.yml') }}
+          key: apt-debs-ubuntu-24.04-v1
           restore-keys: |
             apt-debs-ubuntu-24.04-
+          save-always: true
 
       - name: Install headless display and Vulkan runtime
         shell: bash
@@ -166,8 +167,31 @@ jobs:
           # Close the Minecraft window through X11 so Minecraft can perform
           # its normal shutdown hooks. A normal exit is required; no expected
           # Gradle failure or SIGTERM is accepted as success.
-          window_id="$(xdotool search --onlyvisible --class Minecraft 2>/dev/null | head -n 1 || true)"
-          [ -n "$window_id" ] || fail "Could not find the Minecraft window for graceful shutdown."
+          # SDL/LWJGL window classes vary across Linux environments. Match
+          # the visible window title first, then inspect visible windows for
+          # a Minecraft/LWJGL class instead of assuming WM_CLASS=Minecraft.
+          window_id="$(xdotool search --onlyvisible --name 'Minecraft' 2>/dev/null | head -n 1 || true)"
+          if [ -z "$window_id" ]; then
+            while IFS= read -r candidate; do
+              [ -n "$candidate" ] || continue
+              window_name="$(xdotool getwindowname "$candidate" 2>/dev/null || true)"
+              window_class="$(xdotool getwindowclassname "$candidate" 2>/dev/null || true)"
+              if [[ "$window_name $window_class" =~ [Mm]inecraft|[Ll][Ww][Jj][Gg][Ll] ]]; then
+                window_id="$candidate"
+                break
+              fi
+            done < <(xdotool search --onlyvisible --name '.*' 2>/dev/null || true)
+          fi
+          if [ -z "$window_id" ]; then
+            echo "Visible X11 windows at shutdown:"
+            while IFS= read -r candidate; do
+              [ -n "$candidate" ] || continue
+              printf 'window=%s title=%q class=%q\\n' "$candidate" \
+                "$(xdotool getwindowname "$candidate" 2>/dev/null || true)" \
+                "$(xdotool getwindowclassname "$candidate" 2>/dev/null || true)"
+            done < <(xdotool search --onlyvisible --name '.*' 2>/dev/null || true)
+            fail "Could not identify the Minecraft window for graceful shutdown."
+          fi
           xdotool windowclose "$window_id" || fail "Could not send the Minecraft window-close event."
           set +e
           for _ in $(seq 1 30); do
