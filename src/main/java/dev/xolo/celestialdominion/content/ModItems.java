@@ -3,7 +3,7 @@ package dev.xolo.celestialdominion.content;
 import dev.xolo.celestialdominion.CelestialDominion;
 import dev.xolo.celestialdominion.item.AbilitySwordItem;
 import dev.xolo.celestialdominion.item.CelestialMultitoolItem;
-import com.mojang.datafixers.util.Unit;
+import net.minecraft.util.Unit;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
