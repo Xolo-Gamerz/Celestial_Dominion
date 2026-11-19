@@ -136,13 +136,21 @@ jobs:
           (( stable_samples >= 3 )) || fail "Texture-atlas creation did not complete (last observed count: $last_atlas_count)."
           grep -Eq "Using graphics backend (Vulkan|OpenGL)" "$LOG" || fail "Minecraft did not initialize a graphics backend."
 
+          # Gradle wraps the client JVM. Killing the JVM with SIGTERM makes
+          # the JVM exit 143, but the Gradle runClient task itself exits 1.
+          # Accept that wrapper status only when Gradle explicitly reports the
+          # child JVM's expected 143 and all resource-load milestones passed.
           pkill -TERM -f '[n]et.neoforged.devlaunch.Main' || fail "NeoForge client process not found for shutdown."
           set +e
           wait "$PID"
           status=$?
           set -e
           cat "$SMOKE"
-          [ "$status" -eq 143 ] || fail "Expected controlled SIGTERM exit 143; got $status."
+          if [ "$status" -ne 1 ]; then
+            fail "Expected Gradle wrapper exit 1 after controlled client shutdown; got $status."
+          fi
+          grep -Fq "finished with non-zero exit value 143" "$SMOKE" || fail "Gradle did not report the expected SIGTERM exit from the client JVM."
+          grep -Fq "Execution failed for task ':runClient'." "$SMOKE" || fail "Gradle failure was not isolated to the intentionally stopped runClient task."
           python scripts/check_client_model_bake.py "$LOG"
 
       - name: Upload client logs
