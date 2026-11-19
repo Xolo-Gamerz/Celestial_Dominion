@@ -51,15 +51,16 @@ jobs:
           python scripts/test_assets.py
           python scripts/check_client_model_bake.py --self-test
 
-      - name: Install headless Vulkan runtime
+      - name: Install headless display and Vulkan runtime
         run: |
           sudo apt-get -o Acquire::Retries=3 update
-          sudo apt-get -o Acquire::Retries=3 install -y --no-install-recommends xvfb mesa-vulkan-drivers
+          sudo apt-get -o Acquire::Retries=3 install -y --no-install-recommends xvfb mesa-vulkan-drivers xdotool
 
       - name: Smoke-test client resource loading
         shell: bash
         env:
           SDL_VIDEO_DRIVER: x11
+          ALSOFT_DRIVERS: null
         run: |
           set -euo pipefail
 
@@ -73,14 +74,14 @@ jobs:
           fi
           export VK_ICD_FILENAMES
           mkdir -p run/config
-          if [ -f run/config/fml.toml ]; then
-            if grep -qE '^[[:space:]]*earlyWindowControl[[:space:]]*=' run/config/fml.toml; then
-              sed -i -E 's/^[[:space:]]*earlyWindowControl[[:space:]]*=.*/earlyWindowControl = false/' run/config/fml.toml
-            else
-              printf '\nearlyWindowControl = false\n' >> run/config/fml.toml
-            fi
+          # Disable narration in the client options without creating a partial
+          # NeoForge fml.toml (which causes "config is not correct" warnings).
+          OPTIONS=run/options.txt
+          touch "$OPTIONS"
+          if grep -q '^narrator:' "$OPTIONS"; then
+            sed -i 's/^narrator:.*/narrator:0/' "$OPTIONS"
           else
-            printf 'earlyWindowControl = false\n' > run/config/fml.toml
+            printf '\nnarrator:0\n' >> "$OPTIONS"
           fi
 
           LOG=run/logs/latest.log
@@ -136,21 +137,25 @@ jobs:
           (( stable_samples >= 3 )) || fail "Texture-atlas creation did not complete (last observed count: $last_atlas_count)."
           grep -Eq "Using graphics backend (Vulkan|OpenGL)" "$LOG" || fail "Minecraft did not initialize a graphics backend."
 
-          # Gradle wraps the client JVM. Killing the JVM with SIGTERM makes
-          # the JVM exit 143, but the Gradle runClient task itself exits 1.
-          # Accept that wrapper status only when Gradle explicitly reports the
-          # child JVM's expected 143 and all resource-load milestones passed.
-          pkill -TERM -f '[n]et.neoforged.devlaunch.Main' || fail "NeoForge client process not found for shutdown."
+          # Close the Minecraft window through X11 so Minecraft can perform
+          # its normal shutdown hooks. A normal exit is required; no expected
+          # Gradle failure or SIGTERM is accepted as success.
+          window_id="$(xdotool search --onlyvisible --class Minecraft 2>/dev/null | head -n 1 || true)"
+          [ -n "$window_id" ] || fail "Could not find the Minecraft window for graceful shutdown."
+          xdotool windowclose "$window_id" || fail "Could not send the Minecraft window-close event."
           set +e
+          for _ in $(seq 1 30); do
+            if ! kill -0 "$PID" 2>/dev/null; then break; fi
+            sleep 1
+          done
+          if kill -0 "$PID" 2>/dev/null; then
+            fail "Minecraft did not shut down gracefully within 30 seconds."
+          fi
           wait "$PID"
           status=$?
           set -e
           cat "$SMOKE"
-          if [ "$status" -ne 1 ]; then
-            fail "Expected Gradle wrapper exit 1 after controlled client shutdown; got $status."
-          fi
-          grep -Fq "finished with non-zero exit value 143" "$SMOKE" || fail "Gradle did not report the expected SIGTERM exit from the client JVM."
-          grep -Fq "Execution failed for task ':runClient'." "$SMOKE" || fail "Gradle failure was not isolated to the intentionally stopped runClient task."
+          [ "$status" -eq 0 ] || fail "Gradle/client exited with status $status after graceful window close."
           python scripts/check_client_model_bake.py "$LOG"
 
       - name: Upload client logs
